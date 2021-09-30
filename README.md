@@ -1,6 +1,8 @@
 # Jupyterhub
 Jupyterhub with GPU. If you part of the organization, you can access to jupyterhub! https://jupyterhub.malaysiaai.ml
 
+<img src="tesla.png" width="50%">
+
 ## how-to
 
 1. Install Jupyter Notebook,
