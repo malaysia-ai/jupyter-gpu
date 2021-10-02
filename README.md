@@ -3,24 +3,19 @@ Jupyterhub with GPU. If you part of the organization, you can access to jupyterh
 
 <img src="tesla.png" width="50%">
 
+## Rules
+
+1. Directory home in Jupyter Notebook is shared among users.
+2. Make sure naming your directory properly.
+3. Do not try to delete other users data.
+4. Admin can kill any GPU usage app anytime.
+
 ## how-to
 
 1. Install Jupyter Notebook,
 
 ```bash
 sudo apt update
-sudo apt install python3.8 -y
-sudo apt install python3-pip python3.8-dev -y
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-sudo apt install npm -y
-sudo npm install pm2 -g
-curl -fsSL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install -y nodejs
-pip3 install jupyter
-sudo pip3 install jupyterlab-topbar jupyterlab-pygments jupyterlab-system-monitor jupyter-resource-usage
-pm2 start "~/.local/bin/jupyter notebook --NotebookApp.token='' --ip=0.0.0.0"
-pm2 start "~/.local/bin/jupyter lab --NotebookApp.token='' --ip=0.0.0.0 --collaborative"
-pm2 startup
-sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ubuntu --hp /home/ubuntu
-pm2 save
+sudo apt install python3-dev python3-pip
+screen -m ~/.local/bin/jupyter notebook --NotebookApp.token='' --NotebookApp.MappingKernelManager.cull_idle_timeout=600 --ip=0.0.0.0
 ```
