@@ -1,0 +1,18 @@
+# Systemd service file for oauth2_proxy daemon 
+
+[Unit]
+Description=jupyterhub daemon service for ubuntu user
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+
+ExecStart=/home/ubuntu/.local/bin/jupyter notebook --NotebookApp.token='' --NotebookApp.MappingKernelManager.cull_idle_timeout=300
+ExecReload=/bin/kill -HUP $MAINPID
+
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=default.target
