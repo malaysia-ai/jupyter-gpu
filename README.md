@@ -41,6 +41,7 @@ Sat Oct  2 21:19:00 2021
 ```bash
 sudo apt update
 sudo apt install python3-dev python3-pip -y
+pip3 install jupyter
 
 sudo cp jupyterhub.service /etc/systemd/system/
 sudo systemctl daemon-reload
