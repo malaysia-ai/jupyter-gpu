@@ -40,7 +40,5 @@ Sat Oct  2 21:19:00 2021
 
 ```bash
 sudo apt update
-sudo apt install python3-dev python3-pip
-screen -m ~/.local/bin/jupyter notebook --NotebookApp.token='' --NotebookApp.MappingKernelManager.cull_idle_timeout=300
-screen -m autossh -NR 8888:localhost:8888 ubuntu@malaysiaai.ml
+sudo apt install python3-dev python3-pip -y
 ```
