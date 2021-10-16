@@ -1,4 +1,4 @@
-# Systemd service file for oauth2_proxy daemon 
+# Systemd service file for jupyterhub daemon 
 
 [Unit]
 Description=jupyterhub daemon service for ubuntu user
