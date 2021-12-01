@@ -8,7 +8,7 @@ After=syslog.target network.target
 User=ubuntu
 Group=ubuntu
 
-ExecStart=/home/ubuntu/.local/bin/jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --notebook-dir=/home/ubuntu
+ExecStart=/home/ubuntu/.local/bin/jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --notebook-dir=/home/ubuntu --NotebookApp.MappingKernelManager.cull_idle_timeout=600
 ExecReload=/bin/kill -HUP $MAINPID
 
 KillMode=process
