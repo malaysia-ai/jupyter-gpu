@@ -31,7 +31,7 @@ Sat Oct  2 21:19:00 2021
 1. Directory home in Jupyter Notebook is shared among users.
 2. Make sure naming your directory properly.
 3. Do not try to delete other users data.
-4. Notebooks automatically shutdown if idle more than 5 minutes.
+4. Notebooks automatically shutdown if idle more than 10 minutes.
 5. Admin can kill any GPU usage app anytime.
 
 ## how-to
