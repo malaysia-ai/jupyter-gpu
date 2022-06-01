@@ -50,3 +50,22 @@ sudo systemctl daemon-reload
 sudo systemctl enable jupyterhub.service 
 sudo systemctl start jupyterhub.service
 ```
+
+## new kernel
+
+Let say you want to have your own virtualenv want to deploy it as jupyter kernel, follow simple step below,
+
+1. Initialize virtual env,
+
+```bash
+python3 -m venv tf-nvidia
+```
+
+2. Add in jupyter notebook kernel,
+
+```bash
+~/tf-nvidia/bin/pip3 install ipykernel
+~/tf-nvidia/bin/python3 -m ipykernel install --user --name=tf1
+```
+
+You will found your new kernel in Jupyter Notebook as `tf1`.
