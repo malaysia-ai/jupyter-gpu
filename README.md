@@ -1,5 +1,6 @@
-# Jupyterhub
-Jupyterhub with GPU. If you part of the organization, you can access to jupyterhub! https://jupyterhub.malaysiaai.ml
+# Jupyterhub + Code-server
+
+Jupyterhub with GPU and code-server! If you part of the organization, you can access to jupyterhub! https://jupyterhub.malaysiaai.ml
 
 ```text
 Thu Jun  2 01:07:23 2022       
@@ -30,20 +31,23 @@ Thu Jun  2 01:07:23 2022
 
 ## Rules
 
-1. Directory home in Jupyter Notebook is shared among users.
-2. Make sure naming your directory properly.
-3. Do not try to delete other users data.
-4. Notebooks automatically shutdown if idle more than 10 minutes.
-5. Admin can kill any GPU usage app anytime.
+1. Notebooks automatically shutdown if idle more than 120 minutes.
+2. Admin can kill any GPU usage app anytime.
+3. Admin also can access your directory anytime.
 
 ## how-to
 
-1. Install Jupyter Notebook,
+1. Install JupyterHub and Code-server,
 
 ```bash
 sudo apt update
+sudo apt-get install nodejs npm
 sudo apt install python3-dev python3-pip -y
-pip3 install jupyter
+sudo pip3 install notebook jupyterlab jupyterhub jupyter-server-proxy
+sudo mkdir -p /etc/jupyter
+sudo cp jupyter_notebook_config.py /etc/jupyter
+sudo cp jupyterhub_config.py /etc/jupyter
+curl -fsSL https://code-server.dev/install.sh | sh
 
 sudo cp jupyterhub.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -51,7 +55,19 @@ sudo systemctl enable jupyterhub.service
 sudo systemctl start jupyterhub.service
 ```
 
-## new kernel
+## Access Jupyterlab
+
+Just go to /user/{username}/lab
+
+<img alt="logo" width="40%" src="jupyterlab.png">
+
+## Access code-server
+
+Just go to /user/{username}/code-server
+
+<img alt="logo" width="40%" src="code-server.png">
+
+## new Kernel
 
 Let say you want to have your own virtualenv want to deploy it as jupyter kernel, follow simple step below,
 
