@@ -1,0 +1,17 @@
+version: "3.0"
+
+services:
+  jupyter-gpu:
+    build:
+      context: .
+    container_name: jupyter-gpu
+    ports:
+      - "9001:8888"
+    command: jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
