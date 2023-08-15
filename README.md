@@ -25,9 +25,9 @@ At https://jupyter.app.mesolitica.com, this server is to train the models and da
 
 At https://jupyter-serve.app.mesolitica.com, this server is to serve the model using API and Chatbot interface.
 
-1. 4 cores.
-2. 24 GB RAM.
-3. T4 GPU 16GB VRAM.
+1. 8 cores.
+2. 56 GB RAM.
+3. V100 GPU 16GB VRAM.
 4. Spot based.
 
 ## Auto restart script
