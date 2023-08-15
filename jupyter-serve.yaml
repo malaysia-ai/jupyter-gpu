@@ -84,7 +84,7 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "gpuserve3"
+                      - "gpuserve"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter-serve

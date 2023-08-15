@@ -32,7 +32,7 @@ spec:
                     operator: In
                     values:
                       - "gpu"
-                      - "gpuserve3"
+                      - "gpuserve"
       tolerations:
         - key: "kubernetes.azure.com/scalesetpriority"
           operator: "Equal"
