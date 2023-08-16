@@ -11,6 +11,8 @@ metadata:
     certmanager.k8s.io/acme-dns01-provider: "digitalocean"
     nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.app.mesolitica.com/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.app.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.org/client-max-body-size: 1000M
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
   tls:
     - hosts:
