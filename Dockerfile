@@ -40,5 +40,3 @@ RUN sudo apt-get update \
 RUN sudo ssh-keygen -A
 RUN sudo apt install openssh-server sshpass -y
 RUN echo ubuntu:ubuntu123 | sudo chpasswd
-
-COPY restart-no-gpu.sh /home/ubuntu
