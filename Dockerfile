@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/cuda:11.8.0-runtime-ubuntu22.04
+FROM nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 ubuntu
 RUN apt update
@@ -40,3 +40,5 @@ RUN sudo apt-get update \
 RUN sudo ssh-keygen -A
 RUN sudo apt install openssh-server sshpass -y
 RUN echo ubuntu:ubuntu123 | sudo chpasswd
+
+COPY restart-no-gpu.sh /home/ubuntu
