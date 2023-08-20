@@ -95,6 +95,13 @@ python3 -m venv my-env
 
 In terminal or jupyter cell.
 
+## Building image
+
+```bash
+docker build -t mesoliticadev/jupyter-gpu-devel:main .
+docker push mesoliticadev/jupyter-gpu-devel:main
+```
+
 ## Rules
 
 1. Respect each others, do not kill someone else processes.

@@ -88,7 +88,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter-serve
-          image: mesoliticadev/jupyter-gpu:main
+          image: mesoliticadev/jupyter-gpu-devel:main
           imagePullPolicy: Always
           resources:
             limits:
