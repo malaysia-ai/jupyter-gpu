@@ -4,7 +4,9 @@ Jupyter Notebook with GPU and Code Server!
 
 ## Cloud environment
 
-Current manifests only applicable for Azure Kubernetes.
+Current manifests only applicable for Azure Kubernetes Service and AWS EKS.
+
+Why Kubernetes? Spot auto respawn!
 
 ## Server access
 
@@ -14,12 +16,25 @@ protected using Github Oauth, private message @aisyahrzk, or @KamarulAdha or @Ha
 
 At https://jupyter.app.mesolitica.com, this server is to train the models and dataset preprocessing.
 
-1. 24 cores.
+Currently we use https://learn.microsoft.com/en-us/azure/virtual-machines/nc-a100-v4-series
+
+#### 1 GPU Server
+
+Standard_NC24ads_A100_v4, 
+
+1. 24 vCPU.
 2. 220 GB RAM.
-3. A100 GPU 80GB VRAM.
+3. 1 A100 GPU 80GB VRAM.
 4. Spot based.
 
-**We also have 4 A100s and 8 A100s GPU servers on idle**.
+#### 4 GPUs Server
+
+Standard_NC96ads_A100_v4,
+
+1. 96 vCPU.
+2. 880 GB RAM.
+3. 4 A100 GPU 80GB VRAM.
+4. Spot based.
 
 ### Serve server
 
@@ -32,7 +47,7 @@ At https://jupyter-serve.app.mesolitica.com, this server is to serve the model u
 
 ## Auto restart script
 
-Because the instance is spot based, so it can be killed any time in 24 hours max span, so we have to prepare the script to auto respawn,
+Because the instance is spot based, so it can be killed any time, so we have to prepare the script to auto respawn,
 
 ```bash
 pm2 start "python3 /dir/script.py"
