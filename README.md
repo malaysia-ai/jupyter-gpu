@@ -8,6 +8,8 @@ Current manifests only applicable for Azure Kubernetes Service and AWS EKS.
 
 Why Kubernetes? Spot auto respawn!
 
+Why domain is mesolitica.com? Because Malaysia-AI do not have its own domain, and currently @huseinzol05 work for Mesolitica. If you want to sponsor a domain, feel free. we will switch the domain.
+
 ## Server access
 
 protected using Github Oauth, private message @aisyahrzk, or @KamarulAdha or @Hazqeel09 to get access, they will do some background checking.
@@ -121,3 +123,4 @@ docker push mesoliticadev/jupyter-gpu-devel:main
 
 1. Respect each others, do not kill someone else processes.
 2. Do not abuse for personal gains, eg, mining something.
+
