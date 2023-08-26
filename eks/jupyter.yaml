@@ -6,7 +6,12 @@ metadata:
     app: jupyter
 spec:
   ports:
-    - port: 8888
+    - name: test
+      port: 8556
+      targetPort: 8556
+    - name: jupyter
+      port: 8888
+      targetPort: 8888
   clusterIP: None
   selector:
     app: jupyter
@@ -38,6 +43,7 @@ spec:
               nvidia.com/gpu: 1
           ports:
             - containerPort: 8888
+            - containerPort: 8556
           volumeMounts:
             - name: storage
               mountPath: /home/ubuntu

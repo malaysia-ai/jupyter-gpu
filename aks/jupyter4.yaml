@@ -78,10 +78,10 @@ spec:
                     operator: In
                     values:
                       - "spot"
-                  - key: "kubernetes.io/hostname"
+                  - key: "agentpool"
                     operator: In
                     values:
-                      - "aks-gpuv2-22425552-vmss000000"
+                      - "gpuv2"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter4
