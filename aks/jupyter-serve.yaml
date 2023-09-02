@@ -44,6 +44,9 @@ spec:
     - name: jupyter
       port: 8888
       targetPort: 8888
+    - name: chatui
+      port: 9000
+      targetPort: 9000
   clusterIP: None
   selector:
     app: jupyter-serve
@@ -98,6 +101,7 @@ spec:
           ports:
             - containerPort: 8888
             - containerPort: 8000
+            - containerPort: 9000
           volumeMounts:
             - name: storage
               mountPath: /home/ubuntu
