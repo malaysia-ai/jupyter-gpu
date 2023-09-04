@@ -8,6 +8,8 @@ metadata:
     konghq.com/override: "https-only"
     cert-manager.io/issuer: "letsencrypt-prod-app"
     certmanager.k8s.io/acme-challenge-type: "dns01"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.app.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.app.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
 spec:
   tls:
     - hosts:

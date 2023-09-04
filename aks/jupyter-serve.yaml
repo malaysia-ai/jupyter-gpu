@@ -89,7 +89,7 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "gpuserve"
+                      - "gpu"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter-serve
@@ -122,4 +122,4 @@ spec:
         storageClassName: default
         resources:
           requests:
-            storage: 200Gi
+            storage: 500Gi
