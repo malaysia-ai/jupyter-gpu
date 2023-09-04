@@ -42,9 +42,9 @@ Standard_NC96ads_A100_v4,
 
 At https://jupyter-serve.app.mesolitica.com, this server is to serve the model using API and Chatbot interface.
 
-1. 8 cores.
-2. 56 GB RAM.
-3. V100 GPU 16GB VRAM.
+1. 24 vCPU.
+2. 220 GB RAM.
+3. 1 A100 GPU 80GB VRAM.
 4. Spot based.
 
 ## Auto restart script
