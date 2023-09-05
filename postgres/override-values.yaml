@@ -443,8 +443,7 @@ primary:
   resources:
     limits: {}
     requests:
-      cpu: 0.5
-      memory: 2G
+      memory: 200Mi
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   ## @param primary.podSecurityContext.enabled Enable security context
@@ -777,8 +776,7 @@ readReplicas:
   resources:
     limits: {}
     requests:
-      cpu: 0.5
-      memory: 2G
+      memory: 200Mi
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   ## @param readReplicas.podSecurityContext.enabled Enable security context
