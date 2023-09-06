@@ -66,6 +66,8 @@ kill -15 1
 
 So this will kill Jupyter Notebook and force Kubernetes to restart the pod.
 
+About GPU not able to detect, can read more at https://github.com/Azure/AKS/issues/3680
+
 ## Jupyter proxy
 
 If you run any webserver inside jupyter server,

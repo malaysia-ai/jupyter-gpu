@@ -51,6 +51,11 @@ spec:
       containers:
         - image: mcr.microsoft.com/oss/nvidia/k8s-device-plugin:1.11
           name: nvidia-device-plugin-ctr
+          env:
+            - name: FAIL_ON_INIT_ERROR
+              value: "false"
+            - name: PASS_DEVICE_SPECS
+              value: "true"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
