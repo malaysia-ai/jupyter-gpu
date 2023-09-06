@@ -49,12 +49,22 @@ At https://jupyter-serve.app.mesolitica.com, this server is to serve the model u
 
 ## Auto restart script
 
-Because the instance is spot based, so it can be killed any time, so we have to prepare the script to auto respawn,
+Because the instance is spot based, so it can be killed any time (between 1 day - 6 days), so we have to prepare the script to auto respawn,
 
 ```bash
 pm2 start "python3 /dir/script.py"
 pm2 save
 ```
+
+## Manual restart pod
+
+Sometime GPU is not able detect for some reason, so we have to force restart the pod, to do it inside the pod,
+
+```bash
+kill -15 1
+```
+
+So this will kill Jupyter Notebook and force Kubernetes to restart the pod.
 
 ## Jupyter proxy
 
