@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: disk.csi.azure.com
+  name: jupyter-snapshot
+spec:
+  capacity:
+    storage: 512Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: default
+  csi:
+    driver: disk.csi.azure.com
+    readOnly: false
+    volumeHandle: /subscriptions/006e9619-dec6-4a32-9fd6-96a1a281a0fb/resourceGroups/MC_Nous_nous_southeastasia/providers/Microsoft.Compute/disks/jupyter-snapshot
+    volumeAttributes:
+      fsType: ext4

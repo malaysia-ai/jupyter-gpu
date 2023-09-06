@@ -101,8 +101,11 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+              "pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
             ]
+
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
 
   volumeClaimTemplates:
     - metadata:
