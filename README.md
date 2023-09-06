@@ -8,7 +8,7 @@ Current manifests only applicable for Azure Kubernetes Service and AWS EKS.
 
 Why Kubernetes? Spot auto respawn!
 
-Why domain is mesolitica.com? Because Malaysia-AI do not have its own domain, and currently @huseinzol05 work for Mesolitica. If you want to sponsor a domain, feel free. we will switch the domain.
+Why domain is mesolitica.com? Because currently Malaysia-AI sponsored by mesolitica.com!
 
 ## Server access
 
