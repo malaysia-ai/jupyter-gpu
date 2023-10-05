@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ray-worker
+  name: ray-worker
+spec:
+  tolerations:
+    - key: "kubernetes.azure.com/scalesetpriority"
+      operator: "Equal"
+      value: "spot"
+      effect: "NoSchedule"
+    - key: "sku"
+      operator: "Equal"
+      value: "gpu"
+      effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "kubernetes.azure.com/scalesetpriority"
+                operator: In
+                values:
+                  - "spot"
+              - key: "agentpool"
+                operator: In
+                values:
+                  - "gpu"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ray-worker
+  template:
+    metadata:
+      labels:
+        app: ray-worker
+    spec:
+      containers:
+        env:
+            - name: SHELL
+              value: "/bin/bash"
+        command: ["/bin/bash", "-c"]
+        args:
+          [
+            "~/.local/bin/ray start --address=ray-master:6379 --block",
+          ]
+    
+        image: malaysiaai/jupyter-gpu-devel:main
+        name: ray-worker

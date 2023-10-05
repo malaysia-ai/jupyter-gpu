@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ray-master
+  name: ray-master
+spec:
+  tolerations:
+    - key: "kubernetes.azure.com/scalesetpriority"
+      operator: "Equal"
+      value: "spot"
+      effect: "NoSchedule"
+    - key: "sku"
+      operator: "Equal"
+      value: "gpu"
+      effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "kubernetes.azure.com/scalesetpriority"
+                operator: In
+                values:
+                  - "spot"
+              - key: "agentpool"
+                operator: In
+                values:
+                  - "gpu"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ray-master
+  template:
+    metadata:
+      labels:
+        app: ray-master
+    spec:
+      containers:
+        ports:
+            - name: ray-cluster
+              containerPort: 6379
+            - name: ray-dashboard
+              containerPort: 8265
+        env:
+            - name: SHELL
+              value: "/bin/bash"
+        command: ["/bin/bash", "-c"]
+        args:
+          [
+            "~/.local/bin/ray start --head --port=6379 --block --dashboard-host=0.0.0.0",
+          ]
+    
+        image: malaysiaai/jupyter-gpu-devel:main
+        name: ray-master
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ray-master
+  name: ray-master
+spec:
+  ports:
+    - name: ray-cluster
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+    - name: ray-dashboard
+      port: 8265
+      protocol: TCP
+      targetPort: 8265
+  selector:
+    app: ray-master

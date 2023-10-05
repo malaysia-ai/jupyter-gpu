@@ -127,8 +127,8 @@ In terminal or jupyter cell.
 ## Building image
 
 ```bash
-docker build -t mesoliticadev/jupyter-gpu-devel:main .
-docker push mesoliticadev/jupyter-gpu-devel:main
+docker build -t malaysiaai/jupyter-gpu-devel:main .
+docker push malaysiaai/jupyter-gpu-devel:main
 ```
 
 ## Rules
