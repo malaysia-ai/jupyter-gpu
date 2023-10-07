@@ -48,3 +48,4 @@ RUN pip3 install transformers
 RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 RUN pip3 install tblib
 RUN pip3 install py-spy
+RUN pip3 install datasets
