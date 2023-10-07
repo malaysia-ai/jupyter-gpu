@@ -52,3 +52,4 @@ RUN pip3 install datasets
 RUN sudo pip3 install py-spy
 RUN sudo chown root:root `which py-spy`
 RUN sudo chmod u+s `which py-spy`
+RUN pip install accelerate -U
