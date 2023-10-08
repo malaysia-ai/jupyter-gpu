@@ -1,59 +1,34 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  labels:
-    app: ray-master
   name: ray-master
+  annotations:
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: nginx
+    konghq.com/override: "https-only"
+    cert-manager.io/issuer: "letsencrypt-prod-app"
+    certmanager.k8s.io/acme-challenge-type: "dns01"
+    certmanager.k8s.io/acme-dns01-provider: "digitalocean"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.app.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.app.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.org/client-max-body-size: 1000M
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
-  tolerations:
-    - key: "kubernetes.azure.com/scalesetpriority"
-      operator: "Equal"
-      value: "spot"
-      effect: "NoSchedule"
-    - key: "sku"
-      operator: "Equal"
-      value: "gpu"
-      effect: "NoSchedule"
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: "kubernetes.azure.com/scalesetpriority"
-                operator: In
-                values:
-                  - "spot"
-              - key: "agentpool"
-                operator: In
-                values:
-                  - "gpu"
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ray-master
-  template:
-    metadata:
-      labels:
-        app: ray-master
-    spec:
-      containers:
-        ports:
-            - name: ray-cluster
-              containerPort: 6379
-            - name: ray-dashboard
-              containerPort: 8265
-        env:
-            - name: SHELL
-              value: "/bin/bash"
-        command: ["/bin/bash", "-c"]
-        args:
-          [
-            "~/.local/bin/ray start --head --port=6379 --block --dashboard-host=0.0.0.0",
-          ]
-    
-        image: malaysiaai/jupyter-gpu-devel:main
-        name: ray-master
-
+  tls:
+    - hosts:
+        - ray.app.mesolitica.com
+      secretName: wildcard-cert-app
+  rules:
+    - host: ray.app.mesolitica.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ray-master
+                port:
+                  number: 8265
 ---
 apiVersion: v1
 kind: Service
@@ -67,9 +42,76 @@ spec:
       port: 6379
       protocol: TCP
       targetPort: 6379
+    - name: ray-head
+      port: 10001
+      protocol: TCP
+      targetPort: 10001
     - name: ray-dashboard
       port: 8265
       protocol: TCP
       targetPort: 8265
   selector:
     app: ray-master
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ray-master
+  name: ray-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ray-master
+  template:
+    metadata:
+      labels:
+        app: ray-master
+    spec:
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
+                  - key: "agentpool"
+                    operator: In
+                    values:
+                      - "gpu"
+      containers:
+        - image: malaysiaai/jupyter-gpu-devel:main
+          imagePullPolicy: Always
+          ports:
+            - name: ray-cluster
+              containerPort: 6379
+            - name: ray-head
+              containerPort: 10001
+            - name: ray-dashboard
+              containerPort: 8265
+          env:
+            - name: SHELL
+              value: "/bin/bash"
+          command: ["/bin/bash", "-c"]
+          args:
+            [
+              "~/.local/bin/ray start --head --port=6379 --block --dashboard-host=0.0.0.0",
+            ]
+
+          name: ray-master
+          securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE

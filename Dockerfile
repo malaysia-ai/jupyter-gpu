@@ -49,3 +49,6 @@ RUN pip3 install torch torchvision torchaudio --index-url https://download.pytor
 RUN pip3 install tblib
 RUN pip3 install py-spy
 RUN pip3 install datasets
+RUN sudo pip3 install py-spy
+RUN sudo chown root:root `which py-spy`
+RUN sudo chmod u+s `which py-spy`
