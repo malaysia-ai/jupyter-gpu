@@ -12,7 +12,10 @@ Why domain is mesolitica.com? Because currently Malaysia-AI sponsored by mesolit
 
 ## Server access
 
-protected using Github Oauth, private message @aisyahrzk, or @KamarulAdha or @Hazqeel09 to get access, they will do some background checking.
+The server is protected by Github Oauth.
+
+1. Request access at https://docs.google.com/forms/d/e/1FAIpQLSfpKYVXLqekjmC3YQlKSsEzqxti_SWOMUk6NIepIVQrHiViqA/viewform?usp=sf_link
+2. Once approved by https://github.com/aisyahrzk, or https://github.com/KamarulAdha or https://github.com/Hazqeel09, https://github.com/huseinzol05 will give access to the server.
 
 ### Training server 
 
