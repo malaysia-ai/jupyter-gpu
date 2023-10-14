@@ -14,8 +14,8 @@ Why domain is mesolitica.com? Because currently Malaysia-AI sponsored by https:/
 
 The server is protected by Github Oauth.
 
-1. Request access at https://docs.google.com/forms/d/e/1FAIpQLSfpKYVXLqekjmC3YQlKSsEzqxti_SWOMUk6NIepIVQrHiViqA/viewform?usp=sf_link
-2. Once approved by https://github.com/aisyahrzk, or https://github.com/KamarulAdha or https://github.com/Hazqeel09, https://github.com/huseinzol05 will give access to the server.
+1. Request access at https://github.com/malaysia-ai/jupyter-gpu/issues/new?assignees=aisyahrzk%2C+KamarulAdha&labels=access&projects=&template=request-access.md&title=
+2. Once approved by https://github.com/aisyahrzk, or https://github.com/KamarulAdha, https://github.com/huseinzol05 will give access to the server.
 
 ### Training server 
 
