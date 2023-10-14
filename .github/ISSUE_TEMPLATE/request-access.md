@@ -2,15 +2,14 @@
 name: Request access
 about: Request access
 title: ''
-labels: ''
-assignees: KamarulAdha, aisyahrzk
+labels: access
+assignees: aisyahrzk, KamarulAdha
 
 ---
 
 **What is your name?**
 
 **What is your title? no need to mention company.**
-A clear and concise description of what you want to happen.
 
 **What can you help?**
 
