@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: jupyter4
+  name: jupyter4-v2
   annotations:
     konghq.com/strip-path: "true"
     kubernetes.io/ingress.class: nginx
@@ -9,48 +9,48 @@ metadata:
     cert-manager.io/issuer: "letsencrypt-prod-app"
     certmanager.k8s.io/acme-challenge-type: "dns01"
     certmanager.k8s.io/acme-dns01-provider: "digitalocean"
-    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.app.mesolitica.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.app.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.us.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.us.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
     nginx.org/client-max-body-size: 1000M
     nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
   tls:
     - hosts:
-        - jupyter4.app.mesolitica.com
+        - jupyter4-v2.us.mesolitica.com
       secretName: wildcard-cert-app
   rules:
-    - host: jupyter4.app.mesolitica.com
+    - host: jupyter4-v2.us.mesolitica.com
       http:
         paths:
           - pathType: Prefix
             path: /
             backend:
               service:
-                name: jupyter4
+                name: jupyter4-v2
                 port:
                   number: 8888
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jupyter4
+  name: jupyter4-v2
   labels:
-    app: jupyter4
+    app: jupyter4-v2
 spec:
   ports:
     - port: 8888
   clusterIP: None
   selector:
-    app: jupyter4
+    app: jupyter4-v2
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: jupyter4
+  name: jupyter4-v2
 spec:
   selector:
     matchLabels:
-      app: jupyter4
+      app: jupyter4-v2
   serviceName: "jupyter"
   replicas: 1
   updateStrategy:
@@ -58,17 +58,17 @@ spec:
   template:
     metadata:
       labels:
-        app: jupyter4
+        app: jupyter4-v2
     spec:
       tolerations:
         - key: "kubernetes.azure.com/scalesetpriority"
           operator: "Equal"
           value: "spot"
           effect: "NoSchedule"
-        - key: "sku"
-          operator: "Equal"
-          value: "gpu"
-          effect: "NoSchedule"
+        # - key: "sku"
+        #   operator: "Equal"
+        #   value: "gpu"
+        #   effect: "NoSchedule"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -81,10 +81,10 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "gpu"
+                      - "memory"
       terminationGracePeriodSeconds: 10
       containers:
-        - name: jupyter4
+        - name: jupyter4-v2
           image: mesoliticadev/jupyter-gpu-devel:main
           imagePullPolicy: Always
           # resources:
