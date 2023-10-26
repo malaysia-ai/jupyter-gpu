@@ -54,6 +54,10 @@ At https://jupyter-serve.app.mesolitica.com, this server is to serve the model u
 
 You can! If you have a good idea, like, Full Parameter Finetuning Multimodal Vision + Speech + Text, we can spawn more than 1 node 4x A100s, after that you can use Torch Distributed or Ray Cluster.
 
+### You do not want GPU, just big CPU and RAM?
+
+You can! I know, deduping or distributed crawling or distributed something use a lot of CPU and RAM.
+
 ## Auto restart script
 
 Because the instance is spot based, so it can be killed any time (between 1 day - 6 days), so we have to prepare the script to auto respawn,
