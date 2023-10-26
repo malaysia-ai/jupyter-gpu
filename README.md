@@ -50,6 +50,10 @@ At https://jupyter-serve.app.mesolitica.com, this server is to serve the model u
 3. 1 A100 GPU 80GB VRAM.
 4. Spot based.
 
+### You want more than this?
+
+You can! If you have a good idea, like, Full Parameter Finetuning Multimodal Vision + Speech + Text, we can spawn more than 1 node 4x A100s, after that you can use Torch Distributed or Ray Cluster.
+
 ## Auto restart script
 
 Because the instance is spot based, so it can be killed any time (between 1 day - 6 days), so we have to prepare the script to auto respawn,
