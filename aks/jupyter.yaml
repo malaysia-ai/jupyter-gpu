@@ -95,13 +95,17 @@ spec:
           volumeMounts:
             - name: storage
               mountPath: /home/ubuntu
+            - name: shm
+              mountPath: /dev/shm
           env:
             - name: SHELL
               value: "/bin/bash"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth"
           command: ["/bin/bash", "-c"]
           args:
             [
-              "pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+              "sudo chmod -R 777 /dev/shm; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
             ]
 
       securityContext:
@@ -116,3 +120,12 @@ spec:
         resources:
           requests:
             storage: 500Gi
+
+    - metadata:
+        name: shm
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 10Gi

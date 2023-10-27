@@ -1,37 +1,28 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: ray-worker
   labels:
     app: ray-worker
-  name: ray-worker
 spec:
   ports:
-    - name: ray-cluster
-      port: 6379
-      protocol: TCP
-      targetPort: 6379
-    - name: ray-head
-      port: 10001
-      protocol: TCP
-      targetPort: 10001
-    - name: ray-dashboard
-      port: 8265
-      protocol: TCP
-      targetPort: 8265
+    - port: 6379
+  clusterIP: None
   selector:
     app: ray-worker
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  labels:
-    app: ray-worker
   name: ray-worker
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: ray-worker
+  serviceName: "ray-worker"
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -59,27 +50,39 @@ spec:
                     operator: In
                     values:
                       - "gpu"
+      terminationGracePeriodSeconds: 10
       containers:
-        - image: malaysiaai/jupyter-gpu-devel:main
+        - name: ray-worker
+          image: malaysiaai/jupyter-gpu-devel:main
           imagePullPolicy: Always
-          ports:
-            - name: ray-cluster
-              containerPort: 6379
-            - name: ray-head
-              containerPort: 10001
-            - name: ray-dashboard
-              containerPort: 8265
-          env:
-            - name: SHELL
-              value: "/bin/bash"
-          command: ["/bin/bash", "-c"]
-          args: ["~/.local/bin/ray start --address=jupyter:6379 --block"]
           resources:
             limits:
               nvidia.com/gpu: 1
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+          env:
+            - name: SHELL
+              value: "/bin/bash"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth"
+          command: ["/bin/bash", "-c"]
+          args:
+            [
+              "pip3 install ray==2.7.1; sudo chmod -R 777 /dev/shm; ~/.local/bin/ray start --address=jupyter:6379 --block",
+            ]
 
-          name: ray-worker
-          securityContext:
-            capabilities:
-              add:
-                - SYS_PTRACE
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: shm
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 10Gi

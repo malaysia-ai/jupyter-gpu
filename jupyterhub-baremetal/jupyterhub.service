@@ -1,0 +1,18 @@
+# Systemd service file for jupyterhub daemon 
+
+[Unit]
+Description=jupyterhub daemon service for ubuntu user
+After=syslog.target network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+
+ExecStart=/home/ubuntu/.local/bin/jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --notebook-dir=/home/ubuntu --NotebookApp.MappingKernelManager.cull_idle_timeout=600
+ExecReload=/bin/kill -HUP $MAINPID
+
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=default.target

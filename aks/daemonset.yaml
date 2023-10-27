@@ -34,6 +34,7 @@ spec:
                       - "gpu"
                       - "gpuserve"
                       - "gpuv2"
+                      - "gpu1"
       tolerations:
         - key: "kubernetes.azure.com/scalesetpriority"
           operator: "Equal"
