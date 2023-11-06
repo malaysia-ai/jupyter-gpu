@@ -102,7 +102,7 @@ hub:
       oauth_callback_url: https://jupyterhub.us.mesolitica.com/hub/oauth_callback
       hosted_domain:
         - mesolitica.com
-      login_service: myfave
+      login_service: mesolitica
     JupyterHub:
       authenticator_class: google
     Authenticator:
