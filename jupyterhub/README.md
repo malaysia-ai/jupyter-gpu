@@ -3,8 +3,8 @@
 ## Building image
 
 ```bash
-docker build -t malaysiaai/jupyterhub-gpu-devel:main .
-docker push malaysiaai/jupyterhub-gpu-devel:main
+docker build -t malaysiaai/notebook:main .
+docker push malaysiaai/notebook:main
 ```
 
 ## how-to install

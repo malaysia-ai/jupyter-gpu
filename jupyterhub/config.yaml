@@ -74,8 +74,8 @@ singleuser:
       - name: jupyterhub-shared
         mountPath: /home/jovyan/shared
   image:
-    name: favedatascience/notebook
-    tag: "3.8.8-spark-flink-pyhive-2022-12-16"
+    name: malaysiaai/notebook
+    tag: "main"
 
 # turns off servers automatically
 cull:
