@@ -91,10 +91,10 @@ spec:
           operator: "Equal"
           value: "spot"
           effect: "NoSchedule"
-        # - key: "sku"
-        #   operator: "Equal"
-        #   value: "gpu"
-        #   effect: "NoSchedule"
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -107,7 +107,7 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "memory"
+                      - "gpu1"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter-serve

@@ -86,10 +86,10 @@ spec:
                     operator: In
                     values:
                       - "spot"
-                  - key: "agentpool"
-                    operator: In
-                    values:
-                      - "gpu"
+                  # - key: "agentpool"
+                  #   operator: In
+                  #   values:
+                  #     - "gpu"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter-serve
