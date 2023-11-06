@@ -6,7 +6,7 @@ Bare metal Jupyterhub with GPU and code-server!
 
 1. Install tailscale VPN, https://tailscale.com/
 2. Request access https://github.com/malaysia-ai/jupyter-gpu/issues/new?assignees=aisyahrzk%2C+KamarulAdha&labels=on-prem&projects=&template=request-on-prem-access.md&title=
-3. Access jupyterhub at http://100.93.25.29:8010/hub/login, admin will give you VPN link and initial password, after login, make sure change your password using `passwd` inside terminal.
+3. Access jupyterhub at http://100.93.25.29:7010/hub/login, admin will give you VPN link and initial password, after login, make sure change your password using `passwd` inside terminal.
 
 ## Rules
 
