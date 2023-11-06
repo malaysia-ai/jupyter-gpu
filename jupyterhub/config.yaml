@@ -97,9 +97,9 @@ hub:
     cloud.google.com/gke-nodepool: jupyter
   config:
     GoogleOAuthenticator:
-      client_id: 111413986291-4p147kljlf0u3a315c669ghe9jrc36k4.apps.googleusercontent.com
-      client_secret: hXKgQ7EoQMn1PzMrJWMCBXo0
-      oauth_callback_url: https://jupyterhub.myfavedata.com/hub/oauth_callback
+      client_id:
+      client_secret:
+      oauth_callback_url: https://jupyterhub.us.mesolitica.com/hub/oauth_callback
       hosted_domain:
         - mesolitica.com
       login_service: myfave
