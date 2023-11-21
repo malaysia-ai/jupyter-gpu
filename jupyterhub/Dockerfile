@@ -1,8 +1,8 @@
-FROM jupyter/datascience-notebook:python-3.9.13
+FROM jupyter/datascience-notebook:python-3.10.11
 
 USER root
 
-ARG PYTHON_VERSION=3.9
+ARG PYTHON_VERSION=3.10
 
 ARG HELM_VERSION=3.2.1
 ARG KUBECTL_VERSION=1.17.5

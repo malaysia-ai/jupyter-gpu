@@ -43,13 +43,18 @@ RUN echo ubuntu:ubuntu123 | sudo chpasswd
 
 RUN sudo apt install ninja-build -y
 
-RUN pip3 install -U "ray[data,train,tune,serve]"
-RUN pip3 install transformers
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip3 install torch --index-url https://download.pytorch.org/whl/cu118
 RUN pip3 install tblib
 RUN pip3 install py-spy
 RUN pip3 install datasets
 RUN sudo pip3 install py-spy
 RUN sudo chown root:root `which py-spy`
 RUN sudo chmod u+s `which py-spy`
-RUN pip install accelerate -U
+RUN pip3 install transformers -U
+RUN pip3 install accelerate -U
+RUN pip3 install deepspeed
+RUN FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE pip3 install flash-attn --no-build-isolation
+
+RUN pip3 install -U "ray[data,train,tune,serve]"
+
+RUN python3 -c "import deepspeed; import torch;"
