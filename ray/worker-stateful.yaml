@@ -49,18 +49,20 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "gpu"
+                      - "gpu1"
       terminationGracePeriodSeconds: 10
       containers:
         - name: ray-worker
           image: malaysiaai/jupyter-gpu-devel:main
           imagePullPolicy: Always
-          resources:
-            limits:
-              nvidia.com/gpu: 1
+          # resources:
+          #   limits:
+          #     nvidia.com/gpu: 1
           ports:
             - containerPort: 6379
           volumeMounts:
+            - name: storage
+              mountPath: /home/ubuntu/storage
             - name: shm
               mountPath: /dev/shm
           env:
@@ -71,13 +73,21 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "pip3 install ray==2.7.1; sudo chmod -R 777 /dev/shm; ~/.local/bin/ray start --address=jupyter:6379 --block",
+              "sudo chmod -R 777 /home/ubuntu/storage; sudo chmod -R 777 /dev/shm; ~/.local/bin/ray start --address=ray-master:6379 --block",
             ]
 
       securityContext:
         fsGroupChangePolicy: "OnRootMismatch"
 
   volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 10Gi
     - metadata:
         name: shm
       spec:
