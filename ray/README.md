@@ -23,6 +23,13 @@ Much better if we use MinIO cluster, use bitnami chart instead.
 - tested random crashed on workers.
 - tested random crashed on master.
 
+2. [multigpus-multinodes.ipynb](multigpus-multinodes.ipynb), 2 nodes, each node is 4x A100 GPUs.
+
+- tested to save the checkpoints and prune old checkpoints.
+- tested to load the checkpoint.
+- tested random crashed on workers.
+- tested random crashed on master.
+
 ### Ray storage sucks
 
 If you used to HuggingFace Trainer interface, loading checkpoint is very easy, I mean, it just checkpoints, but in Ray, even you setup distributed storage, loading checkpoint is straight sucks for HuggingFace, https://docs.ray.io/en/latest/train/user-guides/checkpoints.html#train-distributed-checkpointing
@@ -43,7 +50,26 @@ We cannot use iterator dataset, to resume last steps is not possible due to beha
 
 So to solve this, we use MosaicML streaming, read [test-mosaic.ipynb](test-mosaic.ipynb) how to prepare the dataset and upload to remote.
 
-We need to test MosaicML streaming for multigpus.
+### MosaicML streaming is weird
+
+There are locks mechanism happened on first iteration, but, by doing this,
+
+```python
+# https://github.com/mosaicml/streaming/issues/307#issuecomment-1729829065
+def inf_loop_dataloader(dataloader: torch.utils.data.DataLoader):
+    while True:
+        for batch in dataloader:
+            yield batch
+dataloader = DataLoader(train_dataset, batch_size=2)
+dataset_iterator = iter(inf_loop_dataloader(dataloader))
+batch = next(iter(dataset_iterator))
+```
+
+Solved the problem.
+
+### 1 GPU == 1 worker
+
+To utilize all GPUs available, you must set worker size == number of gpus. If you have 2 nodes, each node got 4 GPUs, so the number of workers is 8.
 
 ## What if
 
