@@ -53,16 +53,16 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: ray-worker
-          image: malaysiaai/jupyter-gpu-devel:main
+          image: malaysiaai/ray-gpu-devel:main
           imagePullPolicy: Always
-          # resources:
-          #   limits:
-          #     nvidia.com/gpu: 1
+          resources:
+            limits:
+              nvidia.com/gpu: 4
           ports:
             - containerPort: 6379
           volumeMounts:
             - name: storage
-              mountPath: /home/ubuntu/storage
+              mountPath: /home/ubuntu
             - name: shm
               mountPath: /dev/shm
           env:
@@ -73,7 +73,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu/storage; sudo chmod -R 777 /dev/shm; ~/.local/bin/ray start --address=ray-master:6379 --block",
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; ray start --address=ray-master:6379 --block",
             ]
 
       securityContext:

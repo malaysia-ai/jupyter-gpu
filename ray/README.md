@@ -138,3 +138,58 @@ while True:
 ```
 
 But, training script will be inside ray master, so if master died, script died too.
+
+## Dry run
+
+To dry run,
+
+```bash
+python3 train.py \
+--model_name_or_path huseinzol05/dummy-mistral-1.1b \
+--per_device_train_batch_size 24 \
+--gradient_accumulation_steps 1 \
+--storage_directory "/home/ubuntu" \
+--output_dir mistral-1.1b \
+--bf16 \
+--torch_dtype "bfloat16" \
+--do_train \
+--do_eval false \
+--num_train_epochs 2 \
+--train_file "s3://train/indexed" \
+--logging_steps 1 \
+--learning_rate 2e-4 \
+--block_size 4096 \
+--save_steps 10 \
+--save_total_limit 3 \
+--warmup_steps 50 \
+--gradient_checkpointing true \
+--num_workers 8
+```
+
+```
+ 23%|██▎       | 5/22 [00:42<02:21,  8.35s/it]
+(RayTrainWorker pid=20282, ip=10.224.0.177) {'loss': 8.4434, 'learning_rate': 8.228161798644421e-05, 'epoch': 0.45}
+ 23%|██▎       | 5/22 [00:43<02:24,  8.48s/it]
+(RayTrainWorker pid=20282, ip=10.224.0.177) {'loss': 8.3139, 'learning_rate': 9.160270615698787e-05, 'epoch': 0.55}
+ 27%|██▋       | 6/22 [00:51<02:12,  8.28s/it]
+ 27%|██▋       | 6/22 [00:50<02:11,  8.19s/it]
+(RayTrainWorker pid=56577) {'loss': 8.3139, 'learning_rate': 9.160270615698787e-05, 'epoch': 0.55}
+(RayTrainWorker pid=20282, ip=10.224.0.177) {'loss': 7.9451, 'learning_rate': 9.948357391330555e-05, 'epoch': 0.64}
+ 32%|███▏      | 7/22 [00:59<02:01,  8.09s/it]
+ 32%|███▏      | 7/22 [00:57<02:00,  8.03s/it]
+(RayTrainWorker pid=56577) {'loss': 7.9451, 'learning_rate': 9.948357391330555e-05, 'epoch': 0.64}
+```
+
+- tested to save the checkpoints and prune old checkpoints.
+- tested to load the checkpoint.
+
+https://wandb.ai/mesolitica/run-ray?workspace=user-husein-mesolitica
+
+[train.py](train.py) already hardcoded deepspeed Zero 3 config.
+
+## Building image
+
+```bash
+docker build -t malaysiaai/ray-gpu-devel:main .
+docker push malaysiaai/ray-gpu-devel:main
+```

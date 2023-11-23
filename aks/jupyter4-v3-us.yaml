@@ -81,15 +81,15 @@ spec:
                   - key: "agentpool"
                     operator: In
                     values:
-                      - "cpu"
+                      - "gpu"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter4-v3
           image: mesoliticadev/jupyter-gpu-devel:main
           imagePullPolicy: Always
-          # resources:
-          #   limits:
-          #     nvidia.com/gpu: 4
+          resources:
+            limits:
+              nvidia.com/gpu: 4
           ports:
             - containerPort: 8888
           volumeMounts:

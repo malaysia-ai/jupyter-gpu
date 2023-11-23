@@ -9,17 +9,17 @@ metadata:
     cert-manager.io/issuer: "letsencrypt-prod-app"
     certmanager.k8s.io/acme-challenge-type: "dns01"
     certmanager.k8s.io/acme-dns01-provider: "digitalocean"
-    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.us.mesolitica.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.us.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west2.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
     nginx.org/client-max-body-size: 1000M
     nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
   tls:
     - hosts:
-        - ray.us.mesolitica.com
+        - ray.us-west2.mesolitica.com
       secretName: wildcard-cert-app
   rules:
-    - host: ray.us.mesolitica.com
+    - host: ray.us-west2.mesolitica.com
       http:
         paths:
           - pathType: Prefix
@@ -41,17 +41,17 @@ metadata:
     cert-manager.io/issuer: "letsencrypt-prod-app"
     certmanager.k8s.io/acme-challenge-type: "dns01"
     certmanager.k8s.io/acme-dns01-provider: "digitalocean"
-    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.us.mesolitica.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth2.us.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west2.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
     nginx.org/client-max-body-size: 1000M
     nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
   tls:
     - hosts:
-        - ray-jupyter.us.mesolitica.com
+        - ray-jupyter.us-west2.mesolitica.com
       secretName: wildcard-cert-app
   rules:
-    - host: ray-jupyter.us.mesolitica.com
+    - host: ray-jupyter.us-west2.mesolitica.com
       http:
         paths:
           - pathType: Prefix
@@ -131,11 +131,11 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: ray-master
-          image: malaysiaai/jupyter-gpu-devel:main
+          image: malaysiaai/ray-gpu-devel:main
           imagePullPolicy: Always
-          # resources:
-          #   limits:
-          #     nvidia.com/gpu: 1
+          resources:
+            limits:
+              nvidia.com/gpu: 4
           ports:
             - name: ray-cluster
               containerPort: 6379
@@ -147,7 +147,7 @@ spec:
               containerPort: 8888
           volumeMounts:
             - name: storage
-              mountPath: /home/ubuntu/storage
+              mountPath: /home/ubuntu
             - name: shm
               mountPath: /dev/shm
           env:
@@ -158,7 +158,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu/storage; sudo chmod -R 777 /dev/shm; ~/.local/bin/ray start --head --port=6379 --dashboard-host=0.0.0.0; pm2 resurrect; pip3 install traitlets==5.9.0; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; ray start --head --port=6379 --dashboard-host=0.0.0.0; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
             ]
 
       securityContext:
