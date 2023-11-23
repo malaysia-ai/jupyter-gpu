@@ -63,6 +63,10 @@ spec:
       nodeSelector:
         agentpool: general
       terminationGracePeriodSeconds: 10
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: my-azurefile
       containers:
         - name: jupyter
           image: mesoliticadev/jupyter-gpu-devel:main
@@ -72,6 +76,8 @@ spec:
           volumeMounts:
             - name: storage
               mountPath: /home/ubuntu
+            - name: volume
+              mountPath: /home/ubuntu/share
           env:
             - name: SHELL
               value: "/bin/bash"
