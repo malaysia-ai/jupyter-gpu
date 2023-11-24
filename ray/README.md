@@ -194,6 +194,8 @@ python3 train.py \
 (RayTrainWorker pid=56577) {'loss': 7.9451, 'learning_rate': 9.948357391330555e-05, 'epoch': 0.64}
 ```
 
+<img src="multinodes-multigpus.png" width="500">
+
 - tested to save the checkpoints and prune old checkpoints.
 - tested to load the checkpoint.
 
