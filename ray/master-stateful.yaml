@@ -129,6 +129,10 @@ spec:
                     values:
                       - "gpu"
       terminationGracePeriodSeconds: 10
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: my-azurefile
       containers:
         - name: ray-master
           image: malaysiaai/ray-gpu-devel:main
@@ -150,6 +154,8 @@ spec:
               mountPath: /home/ubuntu
             - name: shm
               mountPath: /dev/shm
+            - name: volume
+              mountPath: /home/ubuntu/share
           env:
             - name: SHELL
               value: "/bin/bash"

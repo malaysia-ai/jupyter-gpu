@@ -4,17 +4,34 @@ The point of this README, is to prep developers to train multinodes on SPOT inst
 
 ## Why Spot?
 
-GPUs are expensive bro.
+GPUs are expensive bro, with this step, you can train LLM < 7B parameters with less than 10k USD.
 
 ## Prerequisite
 
-1. Distributed storage, if you want privacy and local network which is way faster. Go with MinIO, minimum 2 cores 8GB RAM if you want MinIO faster.
+### ReadWriteMany disk
 
-Much better if we use MinIO cluster, use bitnami chart instead.
+#### AKS
+
+Right now we use AKS, adding ReadWriteMany is very easy,
+
+- [../aks/storageclass.yaml](../aks/storageclass.yaml)
+- [../aks/sharedisk.yaml](../aks/sharedisk.yaml)
+
+After that you can attach disk to existing stateful, https://github.com/malaysia-ai/jupyter-gpu/blob/main/aks/jupyter-us-west2.yaml#L66
+
+#### GKE
+
+For GKE, you need to deploy NFS server. Previous experience I follow https://8grams.medium.com/how-to-setup-persistent-storage-with-nfs-on-gke-google-kubernetes-engine-the-proper-way-daf40b63c149
+
+#### EKS
+
+AWS EKS is pain in the ass.
 
 ## What do we learned?
 
 ### Where are the notebooks?
+
+All these notebooks been battle-tested.
 
 1. [train-gpt2-mosaic.ipynb](train-gpt2-mosaic.ipynb), 2 nodes, trained GPT2, each node is 1x A100 GPU.
 
@@ -34,11 +51,7 @@ Much better if we use MinIO cluster, use bitnami chart instead.
 
 If you used to HuggingFace Trainer interface, loading checkpoint is very easy, I mean, it just checkpoints, but in Ray, even you setup distributed storage, loading checkpoint is straight sucks for HuggingFace, https://docs.ray.io/en/latest/train/user-guides/checkpoints.html#train-distributed-checkpointing
 
-So to solve this problem, we created S3 Callback during HuggingFace `on_save`, so this will sync from local to S3.
-
-During starting train session, we only fetch latest checkpoint to each locals and load as usual.
-
-What is the downside of this? **each locals** need to fetch the same remote checkpoint, this can burden remote storage.
+So to solve this problem, we use ReadWriteMany disk, so all locals can access the same directory.
 
 ### HuggingFace datasets super slow on huge dataset
 
@@ -48,7 +61,7 @@ You might read https://github.com/huggingface/datasets/issues/2252#issuecomment-
 
 We cannot use iterator dataset, to resume last steps is not possible due to behavior of iterator (no dataset length).
 
-So to solve this, we use MosaicML streaming, read [test-mosaic.ipynb](test-mosaic.ipynb) how to prepare the dataset and upload to remote.
+So to solve this, we use MosaicML streaming, but not straight forward as that. Read more at https://github.com/malaysia-ai/dedup-text-dataset/tree/main/pretrain-llm
 
 ### MosaicML streaming is weird
 
@@ -149,13 +162,14 @@ python3 train.py \
 --per_device_train_batch_size 24 \
 --gradient_accumulation_steps 1 \
 --storage_directory "/home/ubuntu" \
+--share_directory "/home/ubuntu/share" \
 --output_dir mistral-1.1b \
 --bf16 \
 --torch_dtype "bfloat16" \
 --do_train \
 --do_eval false \
 --num_train_epochs 2 \
---train_file "s3://train/indexed" \
+--train_file "/home/ubuntu/share/indexed" \
 --logging_steps 1 \
 --learning_rate 2e-4 \
 --block_size 4096 \
@@ -185,7 +199,7 @@ python3 train.py \
 
 https://wandb.ai/mesolitica/run-ray?workspace=user-husein-mesolitica
 
-[train.py](train.py) already hardcoded deepspeed Zero 3 config.
+**This script already hardcoded deepspeed Zero 3 config**.
 
 ## Building image
 

@@ -56,6 +56,7 @@ RUN sudo pip3 install deepspeed==0.12.3
 RUN FLASH_ATTENTION_SKIP_CUDA_BUILD=TRUE sudo pip3 install flash-attn --no-build-isolation
 RUN sudo pip3 install "ray[data,train,tune,serve]"==2.8.0
 RUN sudo pip3 install wandb
+RUN sudo pip3 install mosaicml-streaming
 RUN sudo pip3 install traitlets==5.9.0
 
-RUN python3 -c "import deepspeed; import torch; import ray; import wandb;"
+RUN python3 -c "import deepspeed; import torch; import ray; import wandb; import streaming"

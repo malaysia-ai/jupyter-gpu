@@ -27,6 +27,7 @@ import wandb
 wandb_api = wandb.Api()
 WANDB_PROJECT = os.environ.get('WANDB_PROJECT', 'run-ray')
 WANDB_API_KEY = os.environ.get('WANDB_API_KEY', wandb_api.api_key)
+MINIO = os.environ.get('MINIO', 'http://minio:9000')
 
 
 class RayConnection:
@@ -157,9 +158,9 @@ class DataTrainingArguments:
         default='/home/ubuntu/',
         metadata={"help": "base storage directory"},
     )
-    share_directory: str = field(
-        default='/home/ubuntu/share',
-        metadata={"help": "share storage directory"},
+    s3_bucket: str = field(
+        default='train',
+        metadata={"help": "s3 bucket"},
     )
     max_train_samples: Optional[int] = field(
         default=None, metadata={
@@ -210,10 +211,15 @@ def train_func(config):
     from streaming.base.format.mds.encodings import Encoding, _encodings
     from streaming import StreamingDataset
     import streaming
+    import s3fs
 
     torch.cuda.set_device(int(get_device_str.split(':')[-1]))
+    print(torch.cuda.device_count(), torch.cuda.current_device(), get_device_str.split(':')[-1])
     local_rank = os.environ['LOCAL_RANK']
     print('local_rank', local_rank)
+
+    MINIO = os.environ.get('MINIO', 'http://minio:9000')
+    fs = s3fs.S3FileSystem(endpoint_url=MINIO, anon=True)
 
     model_args, data_args, training_args = config
 
@@ -247,8 +253,10 @@ def train_func(config):
 
     directory = model_args.model_name_or_path.replace('/', '-')
     local = os.path.join(data_args.storage_directory, 'local_mosaic')
-    output_dir = os.path.join(data_args.share_directory, directory)
+    output_dir = os.path.join(data_args.storage_directory, directory)
     output_temp = os.path.join(data_args.storage_directory, 'temp' + device)
+    s3_bucket = data_args.s3_bucket
+    s3_output_dir = os.path.join(s3_bucket, directory)
 
     shutil.rmtree(local, ignore_errors=True)
     train_dataset = DatasetFixed(local=local, remote=data_args.train_file)
@@ -274,6 +282,7 @@ def train_func(config):
         use_flash_attention_2=True,
         torch_dtype=torch_dtype,
     )
+    model.is_parallelizable = False
 
     deepspeed = {
         "fp16": {
@@ -360,15 +369,31 @@ def train_func(config):
         data_collator=default_data_collator,
     )
 
-    last_checkpoint = None
-    if os.path.isdir(output_dir):
-        last_checkpoint = get_last_checkpoint(output_dir)
+    class S3Callback(TrainerCallback):
+        def on_save(self, args, state, control, **kwargs):
+            if local_rank == '0':
+                fs.delete(s3_output_dir)
+                print(f'upload from {output_dir} to {s3_bucket}')
+                fs.put(output_dir, s3_bucket, recursive=True)
 
-    checkpoint = None
-    if last_checkpoint is not None:
-        checkpoint = last_checkpoint
+    trainer.add_callback(S3Callback())
 
-    trainer.train(resume_from_checkpoint=checkpoint)
+    checkpoints = []
+    try:
+        checkpoints = fs.ls(s3_output_dir)
+        checkpoints = [f for f in checkpoints if 'checkpoint-' in f]
+        checkpoints = sorted(checkpoints, key=lambda x: int(x.split('-')[-1]))
+    except BaseException:
+        pass
+
+    if len(checkpoints):
+        checkpoint = checkpoints[-1]
+        print(f'load checkpoint from {checkpoint} into {output_temp}')
+        shutil.rmtree(output_temp, ignore_errors=True)
+        fs.get(checkpoint, output_temp, recursive=True)
+        trainer.train(resume_from_checkpoint=output_temp)
+    else:
+        trainer.train()
 
 
 def main():
@@ -377,9 +402,12 @@ def main():
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
     runtime_env = {
+        'pip': ['wandb', 's3fs', 'mosaicml-streaming'],
         'env_vars': {
             'WANDB_PROJECT': WANDB_PROJECT,
             'WANDB_API_KEY': WANDB_API_KEY,
+            'S3_ENDPOINT_URL': MINIO,
+            'MINIO': MINIO,
         }
     }
 
