@@ -178,7 +178,7 @@ spec:
         storageClassName: default
         resources:
           requests:
-            storage: 10Gi
+            storage: 100Gi
     - metadata:
         name: shm
       spec:

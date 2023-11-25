@@ -60,8 +60,28 @@ spec:
       labels:
         app: jupyter
     spec:
-      nodeSelector:
-        agentpool: general
+      # tolerations:
+      #   - key: "kubernetes.azure.com/scalesetpriority"
+      #     operator: "Equal"
+      #     value: "spot"
+      #     effect: "NoSchedule"
+      #   - key: "sku"
+      #     operator: "Equal"
+      #     value: "gpu"
+      #     effect: "NoSchedule"
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: "kubernetes.azure.com/scalesetpriority"
+      #               operator: In
+      #               values:
+      #                 - "spot"
+      #             - key: "agentpool"
+      #               operator: In
+      #               values:
+      #                 - "cpu"
       terminationGracePeriodSeconds: 10
       volumes:
         - name: volume

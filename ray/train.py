@@ -207,17 +207,20 @@ def train_func(config):
 
     import torch
     from torch.utils.data import DataLoader
-    from streaming.base.format.mds.encodings import Encoding, _encodings
-    from streaming import StreamingDataset
-    import streaming
+    from accelerate import dispatch_model
 
     torch.cuda.set_device(int(get_device_str.split(':')[-1]))
     local_rank = os.environ['LOCAL_RANK']
-    print('local_rank', local_rank)
+    node_rank = os.environ['NODE_RANK']
+    print(f'node_rank: {node_rank}, local_rank: {local_rank}')
 
     model_args, data_args, training_args = config
 
     device = get_device_str.replace(':', '-')
+
+    from streaming.base.format.mds.encodings import Encoding, _encodings
+    from streaming import StreamingDataset
+    import streaming
 
     class UInt16(Encoding):
         def encode(self, obj) -> bytes:
@@ -248,7 +251,6 @@ def train_func(config):
     directory = model_args.model_name_or_path.replace('/', '-')
     local = os.path.join(data_args.storage_directory, 'local_mosaic')
     output_dir = os.path.join(data_args.share_directory, directory)
-    output_temp = os.path.join(data_args.storage_directory, 'temp' + device)
 
     shutil.rmtree(local, ignore_errors=True)
     train_dataset = DatasetFixed(local=local, remote=data_args.train_file)
@@ -361,14 +363,28 @@ def train_func(config):
     )
 
     last_checkpoint = None
-    if os.path.isdir(output_dir):
-        last_checkpoint = get_last_checkpoint(output_dir)
+    early_break = False
+    while True:
+        try:
+            if os.path.isdir(output_dir):
+                last_checkpoint = get_last_checkpoint(output_dir)
 
-    checkpoint = None
-    if last_checkpoint is not None:
-        checkpoint = last_checkpoint
+            checkpoint = None
+            if last_checkpoint is not None:
+                checkpoint = last_checkpoint
 
-    trainer.train(resume_from_checkpoint=checkpoint)
+            if checkpoint is None:
+                early_break = True
+                break
+
+            trainer.train(resume_from_checkpoint=checkpoint)
+            break
+        except Exception as e:
+            shutil.rmtree(last_checkpoint, ignore_errors=True)
+            print(e)
+
+    if early_break:
+        trainer.train()
 
 
 def main():
@@ -388,7 +404,10 @@ def main():
             num_workers=model_args.num_workers,
             use_gpu=True,
         )
-        run_config = train.RunConfig(failure_config=train.FailureConfig(max_failures=-1))
+        run_config = train.RunConfig(
+            storage_path='/tmp/ray_results',
+            failure_config=train.FailureConfig(
+                max_failures=-1))
         ray_trainer = TorchTrainer(
             train_func,
             train_loop_config=(model_args, data_args, training_args),

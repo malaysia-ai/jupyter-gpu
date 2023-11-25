@@ -20,7 +20,8 @@ spec:
     matchLabels:
       app: ray-worker
   serviceName: "ray-worker"
-  replicas: 1
+  replicas: 4
+  podManagementPolicy: Parallel
   updateStrategy:
     type: RollingUpdate
   template:
@@ -93,7 +94,7 @@ spec:
         storageClassName: default
         resources:
           requests:
-            storage: 10Gi
+            storage: 100Gi
     - metadata:
         name: shm
       spec:

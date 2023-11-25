@@ -84,6 +84,18 @@ Solved the problem.
 
 To utilize all GPUs available, you must set worker size == number of gpus. If you have 2 nodes, each node got 4 GPUs, so the number of workers is 8.
 
+### RuntimeError: Expected all tensors to be on the same device, but found at least two devices
+
+This is because accelerate prepare messed up the device visibility, so we solved this with very stupid patch.
+
+Check the git commit, https://github.com/malaysia-ai/transformers/commit/2df43502e5dc708ffb8173b7869fe120bb30d78c
+
+```python
+model = model.to(args.device)
+for k in inputs:
+    inputs[k] = inputs[k].to(self.args.device)
+```
+
 ## What if
 
 ### Worker died
