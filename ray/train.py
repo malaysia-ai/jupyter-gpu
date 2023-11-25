@@ -207,14 +207,17 @@ def train_func(config):
 
     import torch
     from torch.utils.data import DataLoader
-    from accelerate import dispatch_model
+    import accelerate
+    import transformers
+
+    print(accelerate.__version__, transformers.__version__)
 
     torch.cuda.set_device(int(get_device_str.split(':')[-1]))
     local_rank = os.environ['LOCAL_RANK']
     node_rank = os.environ['NODE_RANK']
     print(f'node_rank: {node_rank}, local_rank: {local_rank}')
 
-    model_args, data_args, training_args = config
+    model_args, data_args = config
 
     device = get_device_str.replace(':', '-')
 
@@ -238,9 +241,12 @@ def train_func(config):
             self.dataset = StreamingDataset(local=local, remote=remote, download_timeout=300)
 
         def __getitem__(self, idx):
+
             data = self.dataset[idx]
             data['labels'] = data['input_ids'].copy()
+
             data.pop('token_type_ids', None)
+
             for k in data.keys():
                 data[k] = data[k].astype(np.int64)
             return data
@@ -276,6 +282,7 @@ def train_func(config):
         use_flash_attention_2=True,
         torch_dtype=torch_dtype,
     )
+    model.gradient_checkpointing_enable()
 
     deepspeed = {
         "fp16": {
@@ -341,18 +348,19 @@ def train_func(config):
 
     training_args = TrainingArguments(
         output_dir,
-        per_device_train_batch_size=training_args.per_device_train_batch_size,
-        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
-        logging_steps=training_args.logging_steps,
-        save_strategy=training_args.save_strategy,
-        save_steps=training_args.save_steps,
-        num_train_epochs=training_args.num_train_epochs,
-        learning_rate=training_args.learning_rate,
-        weight_decay=training_args.weight_decay,
-        warmup_steps=training_args.warmup_steps,
-        bf16=training_args.bf16,
-        gradient_checkpointing=training_args.gradient_checkpointing,
+        per_device_train_batch_size=24,
+        gradient_accumulation_steps=1,
+        logging_steps=1,
+        save_strategy='steps',
+        save_steps=50,
+        num_train_epochs=5,
+        learning_rate=2e-4,
+        weight_decay=0,
+        warmup_steps=100,
+        bf16=True,
+        gradient_checkpointing=True,
         deepspeed=deepspeed,
+        save_total_limit=3,
     )
 
     trainer = Trainer(
@@ -362,8 +370,6 @@ def train_func(config):
         data_collator=default_data_collator,
     )
 
-    print(training_args)
-
     last_checkpoint = None
     if os.path.isdir(output_dir):
         last_checkpoint = get_last_checkpoint(output_dir)
@@ -372,6 +378,8 @@ def train_func(config):
     if last_checkpoint is not None:
         checkpoint = last_checkpoint
 
+    print(checkpoint)
+    print(training_args.distributed_state)
     trainer.train(resume_from_checkpoint=checkpoint)
     trainer.save_model()
     trainer.save_state()
@@ -379,13 +387,15 @@ def train_func(config):
 
 def main():
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
+    model_args, data_args = parser.parse_args_into_dataclasses()
 
     runtime_env = {
         'env_vars': {
             'WANDB_PROJECT': WANDB_PROJECT,
             'WANDB_API_KEY': WANDB_API_KEY,
+            'TORCH_DISTRIBUTED_DEBUG': 'DETAIL',
+            'NCCL_DEBUG': 'DEBUG'
         }
     }
 
@@ -400,7 +410,7 @@ def main():
                 max_failures=-1))
         ray_trainer = TorchTrainer(
             train_func,
-            train_loop_config=(model_args, data_args, training_args),
+            train_loop_config=(model_args, data_args),
             scaling_config=scaling_config,
             run_config=run_config
 
