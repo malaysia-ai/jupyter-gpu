@@ -58,5 +58,6 @@ RUN sudo pip3 install "ray[data,train,tune,serve]"==2.8.0
 RUN sudo pip3 install wandb
 RUN sudo pip3 install mosaicml-streaming
 RUN sudo pip3 install traitlets==5.9.0
+RUN sudo pip3 install git+https://github.com/malaysia-ai/transformers -U
 
 RUN python3 -c "import deepspeed; import torch; import ray; import wandb; import streaming"

@@ -80,7 +80,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; ray start --address=ray-master:6379 --block",
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; rm -rf ~/ray_results; ray start --address=ray-master:6379 --block",
             ]
 
       securityContext:

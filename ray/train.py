@@ -362,29 +362,19 @@ def train_func(config):
         data_collator=default_data_collator,
     )
 
+    print(training_args)
+
     last_checkpoint = None
-    early_break = False
-    while True:
-        try:
-            if os.path.isdir(output_dir):
-                last_checkpoint = get_last_checkpoint(output_dir)
+    if os.path.isdir(output_dir):
+        last_checkpoint = get_last_checkpoint(output_dir)
 
-            checkpoint = None
-            if last_checkpoint is not None:
-                checkpoint = last_checkpoint
+    checkpoint = None
+    if last_checkpoint is not None:
+        checkpoint = last_checkpoint
 
-            if checkpoint is None:
-                early_break = True
-                break
-
-            trainer.train(resume_from_checkpoint=checkpoint)
-            break
-        except Exception as e:
-            shutil.rmtree(last_checkpoint, ignore_errors=True)
-            print(e)
-
-    if early_break:
-        trainer.train()
+    trainer.train(resume_from_checkpoint=checkpoint)
+    trainer.save_model()
+    trainer.save_state()
 
 
 def main():

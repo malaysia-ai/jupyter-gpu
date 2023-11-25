@@ -164,7 +164,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; ray start --head --port=6379 --dashboard-host=0.0.0.0; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; rm -rf ~/ray_results; ray start --head --port=6379 --dashboard-host=0.0.0.0; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
             ]
 
       securityContext:
