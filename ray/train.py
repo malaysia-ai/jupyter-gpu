@@ -362,6 +362,7 @@ def train_func(config):
         gradient_checkpointing=True,
         deepspeed=deepspeed,
         save_total_limit=3,
+        log_level='info',
     )
 
     trainer = Trainer(
@@ -381,6 +382,7 @@ def train_func(config):
 
     print(checkpoint)
     print(training_args.distributed_state)
+    print(trainer.train_dataset, len(trainer.train_dataset))
     trainer.train(resume_from_checkpoint=checkpoint)
     trainer.save_model()
     trainer.save_state()
