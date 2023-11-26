@@ -25,7 +25,7 @@ For GKE, you need to deploy NFS server. Previous experience I follow https://8gr
 
 #### EKS
 
-AWS EKS is pain in the ass.
+For EKS, you can follow this tutorial https://aws.amazon.com/blogs/storage/persistent-storage-for-kubernetes/, but you need to attach EFS IAM first.
 
 ## What do we learned?
 
@@ -86,15 +86,9 @@ To utilize all GPUs available, you must set worker size == number of gpus. If yo
 
 ### RuntimeError: Expected all tensors to be on the same device, but found at least two devices
 
-This is because accelerate prepare messed up the device visibility, so we solved this with very stupid patch.
+This is because accelerate prepare messed up the device visibility, so we solved this with very simple patch.
 
-Check the git commit, https://github.com/malaysia-ai/transformers/commit/2df43502e5dc708ffb8173b7869fe120bb30d78c
-
-```python
-model = model.to(args.device)
-for k in inputs:
-    inputs[k] = inputs[k].to(self.args.device)
-```
+Check the git commit, https://github.com/malaysia-ai/transformers/commit/e794780c91de6453d04ac28b91aacca2bcbbb18b
 
 ## What if
 
@@ -171,25 +165,12 @@ To dry run,
 ```bash
 python3 train.py \
 --model_name_or_path huseinzol05/dummy-mistral-1.1b \
---per_device_train_batch_size 24 \
---gradient_accumulation_steps 1 \
 --storage_directory "/home/ubuntu" \
 --share_directory "/home/ubuntu/share" \
---output_dir mistral-1.1b \
---bf16 \
 --torch_dtype "bfloat16" \
---do_train \
---do_eval false \
---num_train_epochs 2 \
---train_file "/home/ubuntu/share/indexed" \
---logging_steps 1 \
---learning_rate 2e-4 \
+--train_file "/home/ubuntu/share/combine-all" \
 --block_size 4096 \
---save_steps 10 \
---save_total_limit 3 \
---warmup_steps 50 \
---gradient_checkpointing true \
---num_workers 8
+--num_workers 20
 ```
 
 ```
@@ -213,7 +194,7 @@ python3 train.py \
 
 https://wandb.ai/mesolitica/run-ray?workspace=user-husein-mesolitica
 
-**This script already hardcoded deepspeed Zero 3 config**.
+**This script already hardcoded deepspeed Zero 3 config and other configs**.
 
 ## Building image
 

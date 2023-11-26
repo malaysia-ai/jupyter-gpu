@@ -309,11 +309,12 @@ def train_func(config):
         },
 
         "scheduler": {
-            "type": "WarmupLR",
+            "type": "WarmupDecayLR",
             "params": {
                 "warmup_min_lr": "auto",
                 "warmup_max_lr": "auto",
-                "warmup_num_steps": "auto"
+                "warmup_num_steps": "auto",
+                "total_num_steps": "auto",
             }
         },
 
@@ -353,10 +354,10 @@ def train_func(config):
         logging_steps=1,
         save_strategy='steps',
         save_steps=50,
-        num_train_epochs=5,
+        num_train_epochs=10,
         learning_rate=2e-4,
-        weight_decay=0,
-        warmup_steps=100,
+        weight_decay=1e-2,
+        warmup_steps=1000,
         bf16=True,
         gradient_checkpointing=True,
         deepspeed=deepspeed,
