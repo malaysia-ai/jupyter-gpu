@@ -153,10 +153,6 @@ class DataTrainingArguments:
     validation_file: Optional[str] = field(
         default=None, metadata={
             "help": "An optional input evaluation data file to evaluate the perplexity on (a text file)."}, )
-    storage_directory: str = field(
-        default='/home/ubuntu/',
-        metadata={"help": "base storage directory"},
-    )
     share_directory: str = field(
         default='/home/ubuntu/share',
         metadata={"help": "share storage directory"},
@@ -222,7 +218,7 @@ def train_func(config):
     device = get_device_str.replace(':', '-')
 
     from streaming.base.format.mds.encodings import Encoding, _encodings
-    from streaming import StreamingDataset
+    from streaming import LocalDataset
     import streaming
 
     class UInt16(Encoding):
@@ -235,13 +231,12 @@ def train_func(config):
     _encodings['uint16'] = UInt16
 
     class DatasetFixed(torch.utils.data.Dataset):
-        def __init__(self, local, remote):
+        def __init__(self, remote):
 
             streaming.base.util.clean_stale_shared_memory()
-            self.dataset = StreamingDataset(local=local, remote=remote, download_timeout=300)
+            self.dataset = LocalDataset(local=remote)
 
         def __getitem__(self, idx):
-
             data = self.dataset[idx]
             data['labels'] = data['input_ids'].copy()
 
@@ -255,11 +250,9 @@ def train_func(config):
             return len(self.dataset)
 
     directory = model_args.model_name_or_path.replace('/', '-')
-    local = os.path.join(data_args.storage_directory, 'local_mosaic')
     output_dir = os.path.join(data_args.share_directory, directory)
 
-    shutil.rmtree(local, ignore_errors=True)
-    train_dataset = DatasetFixed(local=local, remote=data_args.train_file)
+    train_dataset = DatasetFixed(remote=data_args.train_file)
 
     # https://github.com/mosaicml/streaming/issues/307#issuecomment-1729829065
     def inf_loop_dataloader(dataloader: torch.utils.data.DataLoader):
@@ -355,13 +348,13 @@ def train_func(config):
         save_strategy='steps',
         save_steps=50,
         num_train_epochs=10,
-        learning_rate=2e-4,
-        weight_decay=1e-2,
-        warmup_steps=1000,
+        learning_rate=1e-4,
+        weight_decay=1e-1,
+        warmup_steps=2000,
         bf16=True,
         gradient_checkpointing=True,
         deepspeed=deepspeed,
-        save_total_limit=3,
+        save_total_limit=5,
         log_level='info',
     )
 

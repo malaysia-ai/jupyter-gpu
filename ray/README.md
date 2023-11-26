@@ -90,6 +90,38 @@ This is because accelerate prepare messed up the device visibility, so we solved
 
 Check the git commit, https://github.com/malaysia-ai/transformers/commit/e794780c91de6453d04ac28b91aacca2bcbbb18b
 
+### Total step is not correct
+
+Based on total length we have,
+
+```python
+dataset = StreamingDataset(local='combine-all')
+len(dataset)
+# 22116015
+```
+
+But during running the script,
+
+```text
+"""
+***** Running training *****
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Num examples = 1,105,801
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Num Epochs = 10
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Instantaneous batch size per device = 24
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Total train batch size (w. parallel, distributed & accumulation) = 480
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Gradient Accumulation steps = 1
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Total optimization steps = 23,040
+0|run-3b  | (RayTrainWorker pid=18191, ip=10.224.0.201)   Number of trainable parameters = 3,027,113,600
+0|run-3b  | (RayTrainWorker pid=20644, ip=10.224.0.175)   Continuing training from checkpoint, will skip to saved global_step
+0|run-3b  | (RayTrainWorker pid=20644, ip=10.224.0.175)   Continuing training from epoch 0
+0|run-3b  | (RayTrainWorker pid=20644, ip=10.224.0.175)   Continuing training from global step 350
+0|run-3b  | (RayTrainWorker pid=20644, ip=10.224.0.175)   Will skip the first 0 epochs then the first 350 batches in the first epoch.
+"""
+```
+
+We got `Num examples = 1,105,801`, this because Mosaic divide by the number of world, https://github.com/mosaicml/streaming/blob/main/streaming/base/dataset.py#L501, which is not correct if you are using HuggingFace Trainer, trainer wrapper already did everything for you including the dataset partition, if you partitioned before enter the trainer, the size of dataset will become wrong, so to solve this problem, we have to use https://docs.mosaicml.com/projects/streaming/en/latest/api_reference/generated/streaming.LocalDataset.html#streaming.LocalDataset
+
+
 ## What if
 
 ### Worker died
@@ -194,7 +226,7 @@ python3 train.py \
 
 https://wandb.ai/mesolitica/run-ray?workspace=user-husein-mesolitica
 
-**This script already hardcoded deepspeed Zero 3 config and other configs**.
+**This script already hardcoded deepspeed Zero 3 config and other configs, it might only suitable to pretrain mistral from scratch**.
 
 ## Building image
 
