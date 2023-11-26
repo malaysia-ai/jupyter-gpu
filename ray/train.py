@@ -347,7 +347,7 @@ def train_func(config):
         logging_steps=1,
         save_strategy='steps',
         save_steps=50,
-        num_train_epochs=10,
+        num_train_epochs=3,
         learning_rate=1e-4,
         weight_decay=1e-1,
         warmup_steps=2000,
