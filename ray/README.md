@@ -90,6 +90,22 @@ This is because accelerate prepare messed up the device visibility, so we solved
 
 Check the git commit, https://github.com/malaysia-ai/transformers/commit/e794780c91de6453d04ac28b91aacca2bcbbb18b
 
+Why no PR? we are too tired to follow the parent repo guidelines.
+
+We also added a lot of `print` statements during the debug and lazy to remove it back, 🤗
+
+```text
+0|bash run-5b  | (RayTrainWorker pid=6522) accelerator.backward after
+0|bash run-5b  | (RayTrainWorker pid=6522) loss3 tensor(7.8328, device='cuda:3', grad_fn=<PreBackwardFunctionBackward>)
+0|bash run-5b  | (RayTrainWorker pid=6522) model zero grad
+0|bash run-5b  | (RayTrainWorker pid=269, ip=10.244.1.6) accelerator.backward after
+0|bash run-5b  | (RayTrainWorker pid=269, ip=10.244.1.6) loss3 tensor(7.7416, device='cuda:2', grad_fn=<PreBackwardFunctionBackward>)
+0|bash run-5b  | (RayTrainWorker pid=269, ip=10.244.1.6) model zero grad
+0|bash run-5b  | (RayTrainWorker pid=6521) accelerator.backward after
+0|bash run-5b  | (RayTrainWorker pid=6521) loss3 tensor(7.8758, device='cuda:0', grad_fn=<PreBackwardFunctionBackward>)
+0|bash run-5b  | (RayTrainWorker pid=6521) model zero grad
+```
+
 ### Total step is not correct
 
 Based on total length we have,

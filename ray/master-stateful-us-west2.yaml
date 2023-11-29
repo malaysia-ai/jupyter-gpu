@@ -1,0 +1,189 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ray-master
+  annotations:
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: nginx
+    konghq.com/override: "https-only"
+    cert-manager.io/issuer: "letsencrypt-prod-app"
+    certmanager.k8s.io/acme-challenge-type: "dns01"
+    certmanager.k8s.io/acme-dns01-provider: "digitalocean"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west2.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.org/client-max-body-size: 1000M
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
+spec:
+  tls:
+    - hosts:
+        - ray.us-west-2.mesolitica.com
+      secretName: wildcard-cert-app
+  rules:
+    - host: ray.us-west-2.mesolitica.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ray-master
+                port:
+                  number: 8265
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ray-master-jupyter
+  annotations:
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: nginx
+    konghq.com/override: "https-only"
+    cert-manager.io/issuer: "letsencrypt-prod-app"
+    certmanager.k8s.io/acme-challenge-type: "dns01"
+    certmanager.k8s.io/acme-dns01-provider: "digitalocean"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west2.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.org/client-max-body-size: 1000M
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
+spec:
+  tls:
+    - hosts:
+        - ray-jupyter.us-west-2.mesolitica.com
+      secretName: wildcard-cert-app
+  rules:
+    - host: ray-jupyter.us-west-2.mesolitica.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: ray-master
+                port:
+                  number: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ray-master
+  labels:
+    app: ray-master
+spec:
+  ports:
+    - name: ray-cluster
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+    - name: ray-head
+      port: 10001
+      protocol: TCP
+      targetPort: 10001
+    - name: ray-dashboard
+      port: 8265
+      protocol: TCP
+      targetPort: 8265
+    - name: jupyter
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+  selector:
+    app: ray-master
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ray-master
+spec:
+  selector:
+    matchLabels:
+      app: ray-master
+  serviceName: "ray-master"
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ray-master
+    spec:
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
+                  - key: "agentpool"
+                    operator: In
+                    values:
+                      - "gpu"
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: my-azurefile
+      containers:
+        - name: ray-master
+          image: malaysiaai/ray-gpu-devel:main
+          imagePullPolicy: Always
+          resources:
+            limits:
+              nvidia.com/gpu: 8
+          ports:
+            - name: ray-cluster
+              containerPort: 6379
+            - name: ray-head
+              containerPort: 10001
+            - name: ray-dashboard
+              containerPort: 8265
+            - name: jupyter
+              containerPort: 8888
+          volumeMounts:
+            - name: storage
+              mountPath: /home/ubuntu
+            - name: shm
+              mountPath: /dev/shm
+            - name: volume
+              mountPath: /home/ubuntu/share
+          env:
+            - name: SHELL
+              value: "/bin/bash"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth"
+          command: ["/bin/bash", "-c"]
+          args:
+            [
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; rm -rf ~/ray_results; ray start --head --port=6379 --dashboard-host=0.0.0.0; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+            ]
+
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 100Gi
+    - metadata:
+        name: shm
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 10Gi

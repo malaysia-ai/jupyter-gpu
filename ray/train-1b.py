@@ -27,7 +27,6 @@ import wandb
 wandb_api = wandb.Api()
 WANDB_PROJECT = os.environ.get('WANDB_PROJECT', 'run-ray')
 WANDB_API_KEY = os.environ.get('WANDB_API_KEY', wandb_api.api_key)
-MINIO = os.environ.get('MINIO', 'http://minio:9000')
 
 
 class RayConnection:
@@ -154,13 +153,9 @@ class DataTrainingArguments:
     validation_file: Optional[str] = field(
         default=None, metadata={
             "help": "An optional input evaluation data file to evaluate the perplexity on (a text file)."}, )
-    storage_directory: str = field(
-        default='/home/ubuntu/',
-        metadata={"help": "base storage directory"},
-    )
-    s3_bucket: str = field(
-        default='train',
-        metadata={"help": "s3 bucket"},
+    share_directory: str = field(
+        default='/home/ubuntu/share',
+        metadata={"help": "share storage directory"},
     )
     max_train_samples: Optional[int] = field(
         default=None, metadata={
@@ -199,6 +194,10 @@ class DataTrainingArguments:
     keep_linebreaks: bool = field(
         default=True, metadata={"help": "Whether to keep line breaks when using TXT files or not."}
     )
+    checkpoint_steps: int = field(
+        default=50,
+        metadata={"help": "number of workers"},
+    )
 
 
 def train_func(config):
@@ -208,22 +207,23 @@ def train_func(config):
 
     import torch
     from torch.utils.data import DataLoader
-    from streaming.base.format.mds.encodings import Encoding, _encodings
-    from streaming import StreamingDataset
-    import streaming
-    import s3fs
+    import accelerate
+    import transformers
+
+    print(accelerate.__version__, transformers.__version__)
 
     torch.cuda.set_device(int(get_device_str.split(':')[-1]))
-    print(torch.cuda.device_count(), torch.cuda.current_device(), get_device_str.split(':')[-1])
     local_rank = os.environ['LOCAL_RANK']
-    print('local_rank', local_rank)
+    node_rank = os.environ['NODE_RANK']
+    print(f'node_rank: {node_rank}, local_rank: {local_rank}')
 
-    MINIO = os.environ.get('MINIO', 'http://minio:9000')
-    fs = s3fs.S3FileSystem(endpoint_url=MINIO, anon=True)
-
-    model_args, data_args, training_args = config
+    model_args, data_args = config
 
     device = get_device_str.replace(':', '-')
+
+    from streaming.base.format.mds.encodings import Encoding, _encodings
+    from streaming import LocalDataset
+    import streaming
 
     class UInt16(Encoding):
         def encode(self, obj) -> bytes:
@@ -235,15 +235,17 @@ def train_func(config):
     _encodings['uint16'] = UInt16
 
     class DatasetFixed(torch.utils.data.Dataset):
-        def __init__(self, local, remote):
+        def __init__(self, remote):
 
             streaming.base.util.clean_stale_shared_memory()
-            self.dataset = StreamingDataset(local=local, remote=remote, download_timeout=300)
+            self.dataset = LocalDataset(local=remote)
 
         def __getitem__(self, idx):
             data = self.dataset[idx]
             data['labels'] = data['input_ids'].copy()
+
             data.pop('token_type_ids', None)
+
             for k in data.keys():
                 data[k] = data[k].astype(np.int64)
             return data
@@ -252,14 +254,9 @@ def train_func(config):
             return len(self.dataset)
 
     directory = model_args.model_name_or_path.replace('/', '-')
-    local = os.path.join(data_args.storage_directory, 'local_mosaic')
-    output_dir = os.path.join(data_args.storage_directory, directory)
-    output_temp = os.path.join(data_args.storage_directory, 'temp' + device)
-    s3_bucket = data_args.s3_bucket
-    s3_output_dir = os.path.join(s3_bucket, directory)
+    output_dir = os.path.join(data_args.share_directory, directory)
 
-    shutil.rmtree(local, ignore_errors=True)
-    train_dataset = DatasetFixed(local=local, remote=data_args.train_file)
+    train_dataset = DatasetFixed(remote=data_args.train_file)
 
     # https://github.com/mosaicml/streaming/issues/307#issuecomment-1729829065
     def inf_loop_dataloader(dataloader: torch.utils.data.DataLoader):
@@ -282,7 +279,7 @@ def train_func(config):
         use_flash_attention_2=True,
         torch_dtype=torch_dtype,
     )
-    model.is_parallelizable = False
+    model.gradient_checkpointing_enable()
 
     deepspeed = {
         "fp16": {
@@ -309,11 +306,12 @@ def train_func(config):
         },
 
         "scheduler": {
-            "type": "WarmupLR",
+            "type": "WarmupDecayLR",
             "params": {
                 "warmup_min_lr": "auto",
                 "warmup_max_lr": "auto",
-                "warmup_num_steps": "auto"
+                "warmup_num_steps": "auto",
+                "total_num_steps": "auto",
             }
         },
 
@@ -348,19 +346,23 @@ def train_func(config):
 
     training_args = TrainingArguments(
         output_dir,
-        per_device_train_batch_size=training_args.per_device_train_batch_size,
-        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
-        logging_steps=training_args.logging_steps,
-        save_strategy=training_args.save_strategy,
-        save_steps=training_args.save_steps,
-        num_train_epochs=training_args.num_train_epochs,
-        learning_rate=training_args.learning_rate,
-        weight_decay=training_args.weight_decay,
-        warmup_steps=training_args.warmup_steps,
-        bf16=training_args.bf16,
-        gradient_checkpointing=training_args.gradient_checkpointing,
+        per_device_train_batch_size=24,
+        gradient_accumulation_steps=1,
+        logging_steps=1,
+        save_strategy='steps',
+        save_steps=100,
+        num_train_epochs=3,
+        learning_rate=1e-4,
+        weight_decay=1e-1,
+        warmup_steps=2000,
+        bf16=True,
+        gradient_checkpointing=True,
         deepspeed=deepspeed,
+        save_total_limit=5,
+        log_level='info',
     )
+
+    print(training_args)
 
     trainer = Trainer(
         model=model,
@@ -369,45 +371,34 @@ def train_func(config):
         data_collator=default_data_collator,
     )
 
-    class S3Callback(TrainerCallback):
-        def on_save(self, args, state, control, **kwargs):
-            if local_rank == '0':
-                fs.delete(s3_output_dir)
-                print(f'upload from {output_dir} to {s3_bucket}')
-                fs.put(output_dir, s3_bucket, recursive=True)
+    last_checkpoint = None
+    if os.path.isdir(output_dir):
+        last_checkpoint = get_last_checkpoint(output_dir)
 
-    trainer.add_callback(S3Callback())
+    checkpoint = None
+    if last_checkpoint is not None:
+        checkpoint = last_checkpoint
 
-    checkpoints = []
     try:
-        checkpoints = fs.ls(s3_output_dir)
-        checkpoints = [f for f in checkpoints if 'checkpoint-' in f]
-        checkpoints = sorted(checkpoints, key=lambda x: int(x.split('-')[-1]))
-    except BaseException:
-        pass
-
-    if len(checkpoints):
-        checkpoint = checkpoints[-1]
-        print(f'load checkpoint from {checkpoint} into {output_temp}')
-        shutil.rmtree(output_temp, ignore_errors=True)
-        fs.get(checkpoint, output_temp, recursive=True)
-        trainer.train(resume_from_checkpoint=output_temp)
-    else:
-        trainer.train()
+        trainer.train(resume_from_checkpoint=checkpoint)
+        trainer.save_model()
+        trainer.save_state()
+    except Exception as e:
+        if checkpoint:
+            os.system(f'mv {checkpoint} {checkpoint}-temp')
 
 
 def main():
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
-    model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
+    model_args, data_args = parser.parse_args_into_dataclasses()
 
     runtime_env = {
-        'pip': ['wandb', 's3fs', 'mosaicml-streaming'],
         'env_vars': {
             'WANDB_PROJECT': WANDB_PROJECT,
             'WANDB_API_KEY': WANDB_API_KEY,
-            'S3_ENDPOINT_URL': MINIO,
-            'MINIO': MINIO,
+            'TORCH_DISTRIBUTED_DEBUG': 'DETAIL',
+            'NCCL_DEBUG': 'DEBUG'
         }
     }
 
@@ -416,10 +407,13 @@ def main():
             num_workers=model_args.num_workers,
             use_gpu=True,
         )
-        run_config = train.RunConfig(failure_config=train.FailureConfig(max_failures=-1))
+        run_config = train.RunConfig(
+            storage_path='/tmp/ray_results',
+            failure_config=train.FailureConfig(
+                max_failures=-1))
         ray_trainer = TorchTrainer(
             train_func,
-            train_loop_config=(model_args, data_args, training_args),
+            train_loop_config=(model_args, data_args),
             scaling_config=scaling_config,
             run_config=run_config
 

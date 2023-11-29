@@ -9,17 +9,17 @@ metadata:
     cert-manager.io/issuer: "letsencrypt-prod-app"
     certmanager.k8s.io/acme-challenge-type: "dns01"
     certmanager.k8s.io/acme-dns01-provider: "digitalocean"
-    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west-2.mesolitica.com/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west-2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://github-oauth.us-west2.mesolitica.com/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://github-oauth.us-west2.mesolitica.com/oauth2/start?rd=$scheme://$host$request_uri"
     nginx.org/client-max-body-size: 1000M
     nginx.ingress.kubernetes.io/proxy-body-size: 1000m
 spec:
   tls:
     - hosts:
-        - jupyter.us-west-2.mesolitica.com
+        - jupyter.us-west2.mesolitica.com
       secretName: wildcard-cert-app
   rules:
-    - host: jupyter.us-west-2.mesolitica.com
+    - host: jupyter.us-west2.mesolitica.com
       http:
         paths:
           - pathType: Prefix

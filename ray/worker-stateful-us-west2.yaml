@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ray-worker
+  labels:
+    app: ray-worker
+spec:
+  ports:
+    - port: 6379
+  clusterIP: None
+  selector:
+    app: ray-worker
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ray-worker
+spec:
+  selector:
+    matchLabels:
+      app: ray-worker
+  serviceName: "ray-worker"
+  replicas: 4
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ray-worker
+    spec:
+      tolerations:
+        - key: "kubernetes.azure.com/scalesetpriority"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+        - key: "sku"
+          operator: "Equal"
+          value: "gpu"
+          effect: "NoSchedule"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: "kubernetes.azure.com/scalesetpriority"
+                    operator: In
+                    values:
+                      - "spot"
+                  - key: "agentpool"
+                    operator: In
+                    values:
+                      - "gpu"
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: my-azurefile
+      containers:
+        - name: ray-worker
+          image: malaysiaai/ray-gpu-devel:main
+          imagePullPolicy: Always
+          resources:
+            limits:
+              nvidia.com/gpu: 8
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: storage
+              mountPath: /home/ubuntu
+            - name: shm
+              mountPath: /dev/shm
+            - name: volume
+              mountPath: /home/ubuntu/share
+          env:
+            - name: SHELL
+              value: "/bin/bash"
+            - name: NCCL_SOCKET_IFNAME
+              value: "eth"
+          command: ["/bin/bash", "-c"]
+          args:
+            [
+              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; rm -rf ~/ray_results; ray start --address=ray-master:6379 --block",
+            ]
+
+      securityContext:
+        fsGroupChangePolicy: "OnRootMismatch"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 100Gi
+    - metadata:
+        name: shm
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: default
+        resources:
+          requests:
+            storage: 10Gi
