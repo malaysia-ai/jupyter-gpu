@@ -194,6 +194,10 @@ class DataTrainingArguments:
     keep_linebreaks: bool = field(
         default=True, metadata={"help": "Whether to keep line breaks when using TXT files or not."}
     )
+    checkpoint_steps: int = field(
+        default=50,
+        metadata={"help": "number of workers"},
+    )
 
 
 def train_func(config):
@@ -346,7 +350,7 @@ def train_func(config):
         gradient_accumulation_steps=1,
         logging_steps=1,
         save_strategy='steps',
-        save_steps=50,
+        save_steps=data_args.checkpoint_steps,
         num_train_epochs=3,
         learning_rate=1e-4,
         weight_decay=1e-1,
@@ -373,12 +377,14 @@ def train_func(config):
     if last_checkpoint is not None:
         checkpoint = last_checkpoint
 
-    print(checkpoint)
-    print(training_args.distributed_state)
-    print(trainer.train_dataset, len(trainer.train_dataset))
-    trainer.train(resume_from_checkpoint=checkpoint)
-    trainer.save_model()
-    trainer.save_state()
+    try:
+        trainer.train(resume_from_checkpoint=checkpoint)
+        trainer.save_model()
+        trainer.save_state()
+    except Exception as e:
+        e = str(e)
+        if checkpoint and 'checkpoint' in e.lower():
+            os.system(f'mv {checkpoint} {checkpoint}-temp')
 
 
 def main():

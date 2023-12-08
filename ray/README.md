@@ -4,7 +4,7 @@ The point of this README, is to prep developers to train multinodes on SPOT inst
 
 ## Why Spot?
 
-GPUs are expensive bro, with this step, you can train LLM < 7B parameters with less than 10k USD.
+On-demand GPUs are expensive, with this step, you can train LLM < 13B parameters with less than 10k USD.
 
 ## Prerequisite
 
@@ -47,9 +47,9 @@ All these notebooks been battle-tested.
 - tested random crashed on workers.
 - tested random crashed on master.
 
-### Ray storage sucks
+### Ray storage is not straight forward as I think
 
-If you used to HuggingFace Trainer interface, loading checkpoint is very easy, I mean, it just checkpoints, but in Ray, even you setup distributed storage, loading checkpoint is straight sucks for HuggingFace, https://docs.ray.io/en/latest/train/user-guides/checkpoints.html#train-distributed-checkpointing
+If you used to HuggingFace Trainer interface, loading checkpoint is very easy, I mean, it just checkpoints, but in Ray, even you setup distributed storage, loading checkpoint is straight hard for HuggingFace, https://docs.ray.io/en/latest/train/user-guides/checkpoints.html#train-distributed-checkpointing
 
 So to solve this problem, we use ReadWriteMany disk, so all locals can access the same directory.
 
@@ -86,13 +86,13 @@ To utilize all GPUs available, you must set worker size == number of gpus. If yo
 
 ### RuntimeError: Expected all tensors to be on the same device, but found at least two devices
 
-This is because accelerate prepare messed up the device visibility, so we solved this with very simple patch.
+This is because accelerate mismatched the device visibility, so we solved this with very simple patch.
 
 Check the git commit, https://github.com/malaysia-ai/transformers/commit/e794780c91de6453d04ac28b91aacca2bcbbb18b
 
-Why no PR? we are too tired to follow the parent repo guidelines.
+Why no PR? we are too tired 🤗🤗🤗🤗.
 
-We also added a lot of `print` statements during the debug and lazy to remove it back, 🤗
+We also added a lot of `print` statements during the debug and lazy to remove it back,
 
 ```text
 0|bash run-5b  | (RayTrainWorker pid=6522) accelerator.backward after
@@ -137,6 +137,25 @@ But during running the script,
 
 We got `Num examples = 1,105,801`, this because Mosaic divide by the number of world, https://github.com/mosaicml/streaming/blob/main/streaming/base/dataset.py#L501, which is not correct if you are using HuggingFace Trainer, trainer wrapper already did everything for you including the dataset partition, if you partitioned before enter the trainer, the size of dataset will become wrong, so to solve this problem, we have to use https://docs.mosaicml.com/projects/streaming/en/latest/api_reference/generated/streaming.LocalDataset.html#streaming.LocalDataset
 
+### no GPUs found!
+
+If you get something like this,
+
+```text
+RuntimeError: ProcessGroupNCCL is only supported with GPUs, no GPUs found!
+```
+
+This can be 2 issues,
+1. `nvidia-device-plugin-daemonset` issue.
+2. hardware failure.
+
+Most of the time, restarting `nvidia-device-plugin-daemonset` for particular node solved the problem, if the problem still persist, you have to delete the node and pray cloud provider give you a new node,
+
+```bash
+kubectl cordon node
+kubectl drain node
+kubectl delete node node
+```
 
 ## What if
 

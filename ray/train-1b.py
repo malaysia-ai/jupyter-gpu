@@ -209,6 +209,9 @@ def train_func(config):
     from torch.utils.data import DataLoader
     import accelerate
     import transformers
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG)
 
     print(accelerate.__version__, transformers.__version__)
 
@@ -282,6 +285,10 @@ def train_func(config):
     model.gradient_checkpointing_enable()
 
     deepspeed = {
+        "comms_logger": {
+            "enabled": True,
+            "debug": True
+        },
         "fp16": {
             "enabled": "auto",
             "loss_scale": 0,
@@ -327,12 +334,12 @@ def train_func(config):
             },
             "overlap_comm": True,
             "contiguous_gradients": True,
-            "sub_group_size": 1e9,
+            "sub_group_size": 1e8,
             "reduce_bucket_size": "auto",
             "stage3_prefetch_bucket_size": "auto",
             "stage3_param_persistence_threshold": "auto",
-            "stage3_max_live_parameters": 1e9,
-            "stage3_max_reuse_distance": 1e9,
+            "stage3_max_live_parameters": 1e8,
+            "stage3_max_reuse_distance": 1e8,
             "stage3_gather_16bit_weights_on_model_save": True
         },
 
@@ -359,7 +366,7 @@ def train_func(config):
         gradient_checkpointing=True,
         deepspeed=deepspeed,
         save_total_limit=5,
-        log_level='info',
+        log_level='debug',
     )
 
     print(training_args)
@@ -384,7 +391,8 @@ def train_func(config):
         trainer.save_model()
         trainer.save_state()
     except Exception as e:
-        if checkpoint:
+        e = str(e)
+        if checkpoint and 'checkpoint' in e.lower():
             os.system(f'mv {checkpoint} {checkpoint}-temp')
 
 
