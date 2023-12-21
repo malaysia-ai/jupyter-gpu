@@ -53,7 +53,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyteramd
-          image: malaysiaai/jupyter-gpu-amd:latest
+          image: malaysiaai/jupyter-gpu-amd:v1
           imagePullPolicy: Always
           ports:
             - containerPort: 8888

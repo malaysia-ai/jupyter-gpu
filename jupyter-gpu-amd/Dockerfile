@@ -22,7 +22,7 @@ RUN pm2 list
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 RUN sudo mkdir /etc/jupyter
 COPY jupyter_notebook_config.py /etc/jupyter
-RUN sudo pip3 install jupyter notebook==6.4.12 jupyter-server==1.18.0 jupyter-server-proxy==3.2.1
+RUN sudo pip3 install jupyter notebook==6.5.6 jupyter-server==1.18.0 jupyter-server-proxy==3.2.1
 
 RUN echo "export PATH=\"$HOME/.local/bin:$PATH\"" > .bashrc
 
