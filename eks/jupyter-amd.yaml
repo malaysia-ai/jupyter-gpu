@@ -66,10 +66,12 @@ spec:
           env:
             - name: SHELL
               value: "/bin/bash"
+            - name: CXX
+              value: "/opt/rocm/bin/hipcc"
           command: ["/bin/bash", "-c"]
           args:
             [
-              "sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; sudo /etc/init.d/ssh start; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
+              "cd /opt/cmakeamd && cmake -S. -Bbuild -DAMDGPU_TARGETS=gfx1011 && make -C build && ./build/example;sudo chmod -R 777 /home/ubuntu; sudo chmod -R 777 /dev/shm; sudo /etc/init.d/ssh start; pm2 resurrect; jupyter notebook --NotebookApp.token='' --ip=0.0.0.0 --NotebookApp.allow_origin='*'",
             ]
 
   volumeClaimTemplates:
