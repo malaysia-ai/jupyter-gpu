@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(example LANGUAGES CXX)
+find_package(hip REQUIRED)
+add_executable(example main.cpp)
+target_link_libraries(example PRIVATE hip::device)

@@ -19,12 +19,26 @@ RUN node --version
 RUN npm --version
 RUN pm2 list
 
+# https://gist.github.com/cgmb/6ae0d118bf357fc4576a7568b85e1c45
+# https://www.reddit.com/r/ROCm/comments/11j1cvs/cloud_vms_with_amd_gpus_having_hip_support/
+RUN sudo apt-get update && \
+    sudo apt-get -y upgrade && \
+    sudo apt-get -y install linux-modules-extra-aws
+
+RUN sudo apt-get update && \
+    sudo apt-get install -y cmake build-essential g++-12
+COPY . /opt/cmakeamd
+
+RUN sudo apt-get update -y
+RUN sudo apt-get install kmod
+
+# jupyter
 RUN curl -fsSL https://code-server.dev/install.sh | sh
 RUN sudo mkdir /etc/jupyter
 COPY jupyter_notebook_config.py /etc/jupyter
 RUN sudo pip3 install jupyter notebook==6.5.6 jupyter-server==1.18.0 jupyter-server-proxy==3.2.1
 
-RUN echo "export PATH=\"$HOME/.local/bin:$PATH\"" > .bashrc
+RUN sudo echo "export PATH=\"$HOME/.local/bin:$PATH\"" > .bashrc
 
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 RUN sudo apt-get install git-lfs
