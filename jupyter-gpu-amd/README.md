@@ -3,7 +3,7 @@
 
 2. We pushed the image into our dockerhub repository
 ```
-docker build malaysiaai/jupyter-gpu-amd:v1
+docker build malaysiaai/jupyter-gpu-amd:v1 .
 docker tag malaysiaai/jupyter-gpu-amd:v1 malaysiaai/jupyter-gpu-amd:v1
 docker push malaysiaai/jupyter-gpu-amd:v1
 ```
