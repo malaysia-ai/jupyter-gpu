@@ -3,7 +3,7 @@ The image [malaysiaai/jupyter-gpu-amd:latest](https://hub.docker.com/repository/
 
 https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/docker-image-support-matrix.html
 
-
+We pushed the image into our dockerhub repository
 ```
 docker tag malaysiaai/jupyter-gpu-amd:latest malaysiaai/jupyter-gpu-amd:latest
 docker push malaysiaai/jupyter-gpu-amd:latest
