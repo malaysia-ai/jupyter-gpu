@@ -1,7 +1,5 @@
 # deploy jupyterhub into aks
 
-https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html#initialize-a-helm-chart-configuration-file
-
 1. Add repo chart [reference here](https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html#install-jupyterhub)
 ```
 helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
