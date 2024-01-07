@@ -34,8 +34,8 @@ hub:
   revisionHistoryLimit:
   config:
     GitHubOAuthenticator:
-      client_id: aa7c4c2a01ac6bb4d361
-      client_secret: 3fb99c021d7507443e43fa01a3ebefc583dd2cbb
+      client_id: <clientid>
+      client_secret: <clientsecret>
       oauth_callback_url: https://jupyterhub1.us.mesolitica.com/hub/oauth_callback
       allowed_organizations:
         - malaysia-ai
