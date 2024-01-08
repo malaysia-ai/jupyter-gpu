@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jupyterhub
+  annotations:
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: nginx
+    konghq.com/override: "https-only"
+    cert-manager.io/issuer: "letsencrypt-prod-app"
+    certmanager.k8s.io/acme-challenge-type: "dns01"
+    certmanager.k8s.io/acme-dns01-provider: "digitalocean"
+    nginx.org/client-max-body-size: 1000M
+    nginx.ingress.kubernetes.io/proxy-body-size: 1000m
+spec:
+  tls:
+    - hosts:
+        - jupyterhub1.us.mesolitica.com
+      secretName: wildcard-cert-app
+  rules:
+    - host: jupyterhub1.us.mesolitica.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: jupyterhub
+                port:
+                  number: 80
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jupyterhub
+spec:
+  type: ExternalName
+  externalName: proxy-public.jupyterhub1.svc.cluster.local

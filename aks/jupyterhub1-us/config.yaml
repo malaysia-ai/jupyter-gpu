@@ -1,0 +1,36 @@
+# This file can update the JupyterHub Helm chart's default configuration values.
+#
+# For reference see the configuration reference and default values, but make
+# sure to refer to the Helm chart version of interest to you!
+#
+# Introduction to YAML:     https://www.youtube.com/watch?v=cdLNKUoMc6c
+# Chart config reference:   https://zero-to-jupyterhub.readthedocs.io/en/stable/resources/reference.html
+# Chart default values:     https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/HEAD/jupyterhub/values.yaml
+# Available chart versions: https://hub.jupyter.org/helm-chart/
+#
+
+singleuser:
+  # `cmd: null` allows the custom CMD of the Jupyter docker-stacks to be used
+  # which performs further customization on startup.
+  cmd: null
+  # profileList:
+  #   - display_name: "GPU Server"
+  #     description: "Spawns a notebook server with access to a GPU"
+  #     kubespawner_override:
+  #       extra_resource_limits:
+  #         nvidia.com/gpu: "1"
+  storage:
+    dynamic:
+      storageClass: default
+  defaultUrl: "/lab"
+  extraEnv:
+    JUPYTERHUB_SINGLEUSER_APP: "jupyter_server.serverapp.ServerApp"
+
+hub:
+  config:
+    GitHubOAuthenticator:
+      client_id: 418e4090dbe2ed0a5cd6
+      client_secret: a95ad06dee2a75d7d85ccd3f32f346a116f0ecde
+      oauth_callback_url: https://jupyterhub2.us.mesolitica.com/hub/oauth_callback
+    JupyterHub:
+      authenticator_class: github
