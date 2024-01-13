@@ -1,5 +1,5 @@
 # Building jupyter on Neuronx image
-1. Authenticate Docker with neuronx ECR Registry [here](https://github.com/aws/deep-learning-containers/blob/master/available_images.md#user-content-neuron-containers).
+1. Authenticate docker with Neuronx ECR Registry [here](https://github.com/aws/deep-learning-containers/blob/master/available_images.md#user-content-neuron-containers).
 
 ```bash
 aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 763104351884.dkr.ecr.us-west-2.amazonaws.com
