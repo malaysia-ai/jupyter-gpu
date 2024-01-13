@@ -1,5 +1,4 @@
-# Building jupyter image from Neuronx
-
+# Building jupyter on Neuronx image
 1. Authenticate Docker with neuronx ECR Registry [here](https://github.com/aws/deep-learning-containers/blob/master/available_images.md#neuron-containers)
 
 ```bash
