@@ -1,15 +1,17 @@
-FROM ubuntu:20.04
+FROM 763104351884.dkr.ecr.us-west-2.amazonaws.com/pytorch-training-neuronx:1.13.1-neuronx-py310-sdk2.15.0-ubuntu20.04
 
 # RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 ubuntu
 RUN apt update
 
-ARG VERSION_CODENAME=bionic
+ARG VERSION_CODENAME=focal
 
-RUN echo "deb https://apt.repos.neuron.amazonaws.com ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/neuron.list
+RUN . /etc/os-release
+
+# RUN echo "deb https://apt.repos.neuron.amazonaws.com ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/neuron.list
 
 RUN apt install wget gnupg2 -y
 
-RUN wget -qO - https://apt.repos.neuron.amazonaws.com/GPG-PUB-KEY-AMAZON-AWS-NEURON.PUB | apt-key add -
+# RUN wget -qO - https://apt.repos.neuron.amazonaws.com/GPG-PUB-KEY-AMAZON-AWS-NEURON.PUB | apt-key add -
 
 # Update OS packages 
 RUN apt-get update -y
@@ -17,15 +19,17 @@ RUN apt-get update -y
 # Install git 
 RUN apt-get install git -y
 
-RUN apt-get install aws-neuronx-dkms=2.* -y
-RUN apt-get install aws-neuronx-collectives=2.* -y
-RUN apt-get install aws-neuronx-runtime-lib=2.* -y
-RUN apt-get install aws-neuronx-tools=2.* -y
+# RUN apt-get install aws-neuronx-dkms=2.* -y
+# RUN apt-get install aws-neuronx-collectives=2.* -y
+# RUN apt-get install aws-neuronx-runtime-lib=2.* -y
+# RUN apt-get install aws-neuronx-tools=2.* -y
+
+# RUN lsmod | grep neuron
 
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 
 # Add PATH
-ENV PATH="/opt/aws/neuron/bin:$PATH"
+# ENV PATH="/opt/aws/neuron/bin:$PATH"
 
 RUN apt install python3 python3-dev python3-pip -y
 RUN apt install sudo -y
@@ -66,8 +70,8 @@ RUN sudo ssh-keygen -A
 RUN sudo apt install openssh-server sshpass -y
 RUN echo ubuntu:ubuntu123 | sudo chpasswd
 
-RUN sudo python3 -m pip config set global.extra-index-url https://pip.repos.neuron.amazonaws.com
+# RUN sudo python3 -m pip config set global.extra-index-url https://pip.repos.neuron.amazonaws.com
 
-RUN sudo python3 -m pip install neuronx-cc==2.* --pre torch-neuronx==2.0.* torchvision
+# RUN sudo python3 -m pip install neuronx-cc==2.* --pre torch-neuronx==2.0.* torchvision
 
 RUN sudo pip3 install traitlets==5.9.0
