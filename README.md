@@ -32,13 +32,22 @@ Standard_NC24ads_A100_v4,
 3. 1 A100 GPU 80GB VRAM.
 4. Spot based.
 
+#### 2 GPUs Server
+
+Standard_NC48ads_A100_v4, 
+
+1. 48 vCPU.
+2. 440 GB RAM.
+3. 2 A100 GPUs 80GB VRAM.
+4. Spot based.
+
 #### 4 GPUs Server
 
 Standard_NC96ads_A100_v4,
 
 1. 96 vCPU.
 2. 880 GB RAM.
-3. 4 A100 GPU 80GB VRAM.
+3. 4 A100 GPUs 80GB VRAM.
 4. Spot based.
 
 ### Serve server
