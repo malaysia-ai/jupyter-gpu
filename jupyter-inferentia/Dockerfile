@@ -70,8 +70,10 @@ RUN sudo ssh-keygen -A
 RUN sudo apt install openssh-server sshpass -y
 RUN echo ubuntu:ubuntu123 | sudo chpasswd
 
-# RUN sudo python3 -m pip config set global.extra-index-url https://pip.repos.neuron.amazonaws.com
+RUN pip3 install --upgrade pip3
 
-# RUN sudo python3 -m pip install neuronx-cc==2.* --pre torch-neuronx==2.0.* torchvision
+RUN sudo python3 -m pip config set global.extra-index-url https://pip.repos.neuron.amazonaws.com
+
+RUN sudo python3 -m pip install neuronx-cc==2.* --pre torch-neuronx==2.0.* torchvision
 
 RUN sudo pip3 install traitlets==5.9.0
