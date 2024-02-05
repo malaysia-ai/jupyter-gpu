@@ -57,6 +57,11 @@ spec:
         - name: jupyter-inferentia
           image: malaysiaai/jupyter-inferentia:main
           imagePullPolicy: Always
+          resources:
+           requests:
+               aws.amazon.com/neuroncore: 2
+             limits:
+               aws.amazon.com/neuroncore: 2
           ports:
             - containerPort: 8888
             - containerPort: 22
