@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: jupyter-inferentia
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: ingress-nginx
     nginx.org/client-max-body-size: 10M
     nginx.ingress.kubernetes.io/proxy-body-size: 10m
     nginx.ingress.kubernetes.io/auth-url: "https://github-oauth2.us.malaysia-ai.org/oauth2/auth"
