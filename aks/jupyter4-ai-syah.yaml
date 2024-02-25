@@ -51,7 +51,7 @@ spec:
   selector:
     matchLabels:
       app: jupyter4-ai-syah
-  serviceName: "jupyter"
+  serviceName: "jupyter4-ai-syah"
   replicas: 1
   updateStrategy:
     type: RollingUpdate
@@ -78,10 +78,14 @@ spec:
                     operator: In
                     values:
                       - "spot"
-                  # - key: "agentpool"
-                  #   operator: In
-                  #   values:
-                  #     - "gpu"
+                  - key: "agentpool"
+                    operator: In
+                    values:
+                      - "gpu6"
+                  - key: "aisyah"
+                    operator: In
+                    values:
+                      - "owned"
       terminationGracePeriodSeconds: 10
       containers:
         - name: jupyter4-ai-syah
